@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3rd Grade Math Practice</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .timer-section {
+            background: #f0f4ff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timer-label {
+            font-size: 18px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .timer {
+            font-size: 24px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+
+        .score-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #fff9e6;
+            border-radius: 10px;
+        }
+
+        .genius-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .genius-icon {
+            font-size: 28px;
+        }
+
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .score-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .awards {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            min-height: 40px;
+            align-items: center;
+        }
+
+        .award {
+            font-size: 40px;
+            animation: awardPop 0.5s ease;
+        }
+
+        @keyframes awardPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .question-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .question {
+            font-size: 48px;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .input-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            font-size: 24px;
+            padding: 12px 20px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            width: 200px;
+            text-align: center;
+        }
+
+        button {
+            font-size: 18px;
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .message {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 15px;
+            min-height: 30px;
+            font-weight: bold;
+        }
+
+        .correct {
+            color: #27ae60;
+        }
+
+        .wrong {
+            color: #e74c3c;
+        }
+
+        .star {
+            position: fixed;
+            font-size: 40px;
+            pointer-events: none;
+            animation: starFloat 2s ease-out forwards;
+        }
+
+        @keyframes starFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0);
+            }
+            50% {
+                transform: translateY(-100px) scale(1.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-200px) scale(1);
+            }
+        }
+
+        .game-over {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .game-over h2 {
+            font-size: 36px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .final-score {
+            font-size: 48px;
+            color: #f39c12;
+            margin: 20px 0;
+        }
+
+        .celebration {
+            font-size: 60px;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            margin-top: 30px;
+            font-size: 20px;
+            padding: 15px 40px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .rules {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 16px;
+            color: #555;
+            line-height: 1.8;
+        }
+
+        .rules strong {
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 3rd Grade Math Practice</h1>
+        
+        <div id="gameArea">
+            <div class="timer-section">
+                <div class="timer-label">⏰ Eye Rest</div>
+                <div class="timer" id="timer">10:00</div>
+            </div>
+
+            <div class="score-section">
+                <div class="genius-section">
+                    <span class="genius-icon">⭐</span>
+                    <span>Little Genius</span>
+                </div>
+                <div class="awards" id="awards"></div>
+                <div class="score-item">
+                    <span class="score-label">Score</span>
+                    <span class="score-value" id="score">0</span>
+                </div>
+            </div>
+
+            <div class="question-section">
+                <div class="question" id="question">Ready to start...</div>
+                <div class="input-section">
+                    <input type="number" id="answer" placeholder="Enter answer" autocomplete="off">
+                    <button onclick="checkAnswer()">Submit</button>
+                </div>
+                <div class="message" id="message"></div>
+            </div>
+
+            <div class="rules">
+                📌 <strong>Rules:</strong> Earn 1 point for each correct answer, get a trophy badge🏆 for every 5 points
+            </div>
+        </div>
+
+        <div id="gameOver" class="game-over hidden">
+            <h2>🎉 Practice Complete!</h2>
+            <div class="celebration">🌟✨🎊</div>
+            <div>Your Final Score:</div>
+            <div class="final-score" id="finalScore">0</div>
+            <div class="awards" id="finalAwards"></div>
+            <div style="margin-top: 20px; font-size: 18px; color: #666;">
+                Great job! Remember to rest your eyes!
+            </div>
+            <button class="restart-btn" onclick="restartGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let score = 0;
+        let attempts = 0;
+        let currentQuestion = {};
+        let timeLeft = 300; // 10分钟 = 600秒
+        let timerInterval;
+        let gameActive = true;
+
+        // 生成随机整数
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // 生成新题目
+        function generateQuestion() {
+            const operations = ['+', '-', '×', '÷'];
+            const operation = operations[randomInt(0, 3)];
+            let num1, num2, answer;
+
+            switch(operation) {
+                case '+':
+                    // 2位数到3位数的加法
+                    num1 = randomInt(10, 999);
+                    num2 = randomInt(10, 999);
+                    answer = num1 + num2;
+                    break;
+                
+                case '-':
+                    // 2位数到3位数的减法，结果为正数
+                    num1 = randomInt(10, 999);
+                    num2 = randomInt(10, num1); // 确保 num2 <= num1
+                    answer = num1 - num2;
+                    break;
+                
+                case '×':
+                    // 2位数或整百整千 × 1位数(2-9)
+                    num2 = randomInt(2, 9); // 1位数
+                    
+                    // 随机选择是2位数、整百还是整千
+                    const multiplyType = randomInt(1, 3);
+                    if (multiplyType === 1) {
+                        // 2位数
+                        num1 = randomInt(10, 99);
+                    } else if (multiplyType === 2) {
+                        // 整百 (100-900)
+                        num1 = randomInt(1, 9) * 100;
+                    } else {
+                        // 整千 (1000-9000)
+                        num1 = randomInt(1, 9) * 1000;
+                    }
+                    
+                    answer = num1 * num2;
+                    break;
+                
+                case '÷':
+                    // 2位数 ÷ 1位数(2-9)，结果为整数
+                    num2 = randomInt(2, 9);
+                    answer = randomInt(2, 9); // 商为1位数
+                    num1 = answer * num2; // 被除数
+                    break;
+            }
+
+            currentQuestion = {
+                num1: num1,
+                num2: num2,
+                operation: operation,
+                answer: answer
+            };
+
+            document.getElementById('question').textContent = 
+                `${num1} ${operation} ${num2} = ?`;
+            document.getElementById('answer').value = '';
+            document.getElementById('answer').focus();
+            document.getElementById('message').textContent = '';
+            attempts = 0;
+        }
+
+        // 创建星星特效
+        function createStar(x, y) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.textContent = '⭐';
+            star.style.left = x + 'px';
+            star.style.top = y + 'px';
+            document.body.appendChild(star);
+            
+            setTimeout(() => {
+                star.remove();
+            }, 2000);
+        }
+
+        // 添加徽章
+        function addAward() {
+            const awardsContainer = document.getElementById('awards');
+            const award = document.createElement('div');
+            award.className = 'award';
+            award.textContent = '🏆';
+            awardsContainer.appendChild(award);
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            if (!gameActive) return;
+
+            const userAnswer = parseInt(document.getElementById('answer').value);
+            const messageEl = document.getElementById('message');
+
+            if (isNaN(userAnswer)) {
+                messageEl.textContent = 'Please enter an answer!';
+                messageEl.className = 'message wrong';
+                return;
+            }
+
+            if (userAnswer === currentQuestion.answer) {
+                // 答对了
+                score++;
+                document.getElementById('score').textContent = score;
+                messageEl.textContent = '✓ Excellent! Correct!';
+                messageEl.className = 'message correct';
+
+                // 星星特效
+                const questionBox = document.querySelector('.question-section');
+                const rect = questionBox.getBoundingClientRect();
+                const centerX = rect.left + rect.width / 2;
+                const centerY = rect.top + rect.height / 2;
+                
+                for (let i = 0; i < 3; i++) {
+                    setTimeout(() => {
+                        createStar(
+                            centerX + randomInt(-50, 50),
+                            centerY + randomInt(-50, 50)
+                        );
+                    }, i * 100);
+                }
+
+                // 每5分得一个徽章
+                if (score % 5 === 0) {
+                    addAward();
+                }
+
+                setTimeout(() => {
+                    generateQuestion();
+                }, 1500);
+            } else {
+                attempts++;
+                if (attempts === 1) {
+                    messageEl.textContent = '✗ Think again, try once more!';
+                    messageEl.className = 'message wrong';
+                    document.getElementById('answer').value = '';
+                    document.getElementById('answer').focus();
+                } else {
+                    messageEl.textContent = `✗ The correct answer is ${currentQuestion.answer}, keep going!`;
+                    messageEl.className = 'message wrong';
+                    setTimeout(() => {
+                        generateQuestion();
+                    }, 2000);
+                }
+            }
+        }
+
+        // 更新计时器
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+                endGame();
+            } else {
+                timeLeft--;
+            }
+        }
+
+        // 结束游戏
+        function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            document.getElementById('gameArea').classList.add('hidden');
+            document.getElementById('gameOver').classList.remove('hidden');
+            document.getElementById('finalScore').textContent = score;
+            
+            // 复制徽章到结束页面
+            const awards = document.getElementById('awards').innerHTML;
+            document.getElementById('finalAwards').innerHTML = awards;
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            score = 0;
+            timeLeft = 600;
+            gameActive = true;
+            
+            document.getElementById('score').textContent = '0';
+            document.getElementById('awards').innerHTML = '';
+            document.getElementById('gameArea').classList.remove('hidden');
+            document.getElementById('gameOver').classList.add('hidden');
+            
+            generateQuestion();
+            timerInterval = setInterval(updateTimer, 1000);
+        }
+
+        // 按回车键提交答案
+        document.getElementById('answer').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // 初始化游戏
+        window.onload = function() {
+            generateQuestion();
+            timerInterval = setInterval(updateTimer, 1000);
+        };
+    </script>
+</body>
+</html>

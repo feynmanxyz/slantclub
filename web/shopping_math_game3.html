@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Little Shop - Math Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .score-board {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+            padding: 12px 20px;
+            background: #f0f4ff;
+            border-radius: 10px;
+        }
+
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .score-icon {
+            font-size: 2em;
+        }
+
+        .score-label {
+            font-size: 1em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .score-value {
+            font-size: 1.6em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .trophies-display {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .trophy-item {
+            font-size: 2em;
+            animation: trophy-pop 0.5s;
+        }
+
+        @keyframes trophy-pop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .shop-area {
+            margin: 15px 0;
+            padding: 15px;
+            background: #fff9e6;
+            border-radius: 15px;
+            border: 3px solid #ffd700;
+        }
+
+        .shop-title {
+            text-align: center;
+            font-size: 1.3em;
+            color: #ff6b6b;
+            margin-bottom: 12px;
+        }
+
+        .shelves {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .item {
+            background: white;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .item:hover {
+            transform: translateY(-3px);
+        }
+
+        .item-emoji {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .item-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 3px;
+            font-size: 0.9em;
+        }
+
+        .item-price {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .customer-area {
+            margin: 15px 0;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 15px;
+            border: 3px solid #4caf50;
+        }
+
+        .customer-speech {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .customer-emoji {
+            font-size: 3em;
+        }
+
+        .speech-bubble {
+            flex: 1;
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            position: relative;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .speech-bubble::before {
+            content: '';
+            position: absolute;
+            left: -15px;
+            top: 25px;
+            width: 0;
+            height: 0;
+            border-top: 12px solid transparent;
+            border-bottom: 12px solid transparent;
+            border-right: 15px solid white;
+        }
+
+        .speech-text {
+            font-size: 1.1em;
+            line-height: 1.5;
+            color: #333;
+        }
+
+        .wanted-items {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .answer-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .answer-label {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #answer-input {
+            width: 120px;
+            padding: 12px;
+            font-size: 1.3em;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        #submit-btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        #submit-btn:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+
+        #submit-btn:active {
+            transform: scale(0.95);
+        }
+
+        .feedback {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 35px;
+        }
+
+        .correct {
+            color: #4caf50;
+            animation: bounce 0.5s;
+        }
+
+        .incorrect {
+            color: #e74c3c;
+            animation: shake 0.5s;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .awards {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .award {
+            font-size: 2.5em;
+            animation: award-pop 0.5s;
+        }
+
+        .star-effect {
+            position: fixed;
+            font-size: 2em;
+            pointer-events: none;
+            animation: star-fall 2s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes star-fall {
+            0% {
+                opacity: 1;
+                transform: translateY(0) rotate(0deg) scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(100px) rotate(180deg) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(300px) rotate(360deg) scale(0.5);
+            }
+        }
+
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin: 15px auto;
+            max-width: 400px;
+        }
+
+        .number-btn {
+            padding: 15px;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .number-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        .number-btn:active {
+            transform: scale(0.95);
+        }
+
+        .number-btn.clear {
+            background: #e74c3c;
+            grid-column: span 2;
+        }
+
+        .number-btn.clear:hover {
+            background: #c0392b;
+        }
+
+        #num-submit-btn {
+            background: #4caf50;
+            grid-column: span 3;
+        }
+
+        #num-submit-btn:hover {
+            background: #45a049;
+        }
+
+        .wanted-items-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 10px;
+            border: 2px dashed #ffc107;
+        }
+
+        .wanted-items-title {
+            font-size: 1em;
+            color: #856404;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .wanted-items-list {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .game-over-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .end-game-btn, .close-page-btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .end-game-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+
+        .end-game-btn:hover {
+            background: #ee5a52;
+            transform: scale(1.05);
+        }
+
+        .close-page-btn {
+            background: #6c757d;
+            color: white;
+        }
+
+        .close-page-btn:hover {
+            background: #5a6268;
+            transform: scale(1.05);
+        }
+
+        .final-result {
+            display: none;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            margin-top: 15px;
+        }
+
+        .final-result h2 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .final-stats {
+            font-size: 1.3em;
+            margin: 15px 0;
+        }
+
+        .final-trophies {
+            font-size: 3em;
+            margin: 20px 0;
+        }
+
+        @keyframes award-pop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5em;
+            animation: celebrate 1s;
+            pointer-events: none;
+        }
+
+        @keyframes celebrate {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(1.5) rotate(180deg); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1) rotate(360deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏪 Little Shop - Math Game Gr 3</h1>
+        
+        <div class="score-board">
+            <div class="score-item">
+                <span class="score-icon">⭐</span>
+                <span class="score-label">Good Helper</span>
+            </div>
+            <div class="score-item">
+                <div class="trophies-display" id="trophies"></div>
+            </div>
+            <div class="score-item">
+                <span class="score-icon">🏅</span>
+                <span class="score-value" id="score">0</span>
+            </div>
+        </div>
+
+        <div class="shop-area">
+            <div class="shop-title">🛒 Shop Shelves</div>
+            <div class="shelves" id="shelves"></div>
+        </div>
+
+        <div class="customer-area">
+            <div class="customer-speech">
+                <div class="customer-emoji">👧</div>
+                <div class="speech-bubble">
+                    <div class="speech-text">
+                        Hello! I want to buy some items. How much do I need to pay in total?
+                    </div>
+                    <div class="wanted-items-display">
+                        <div class="wanted-items-title">Items to buy:</div>
+                        <div class="wanted-items-list" id="wanted-items"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="number-pad" id="number-pad">
+                <button class="number-btn" data-num="1">1</button>
+                <button class="number-btn" data-num="2">2</button>
+                <button class="number-btn" data-num="3">3</button>
+                <button class="number-btn" data-num="4">4</button>
+                <button class="number-btn" data-num="5">5</button>
+                <button class="number-btn" data-num="6">6</button>
+                <button class="number-btn" data-num="7">7</button>
+                <button class="number-btn" data-num="8">8</button>
+                <button class="number-btn" data-num="9">9</button>
+                <button class="number-btn" data-num="0">0</button>
+                <button class="number-btn clear" id="clear-btn">Clear</button>
+                <button class="number-btn" id="num-submit-btn">✓ Submit</button>
+            </div>
+
+            <div class="answer-area">
+                <label class="answer-label" for="answer-input">💰 Total:</label>
+                <input type="number" id="answer-input" placeholder="?" min="0" readonly>
+                <span class="answer-label">dollars</span>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <div class="game-over-area">
+            <button class="end-game-btn" id="end-game-btn">End Game</button>
+            <div class="final-result" id="final-result">
+                <h2>🎊 Congratulations! 🎊</h2>
+                <div class="final-stats">
+                    <div>Your Final Score: <strong id="final-score">0</strong> 🏅</div>
+                    <div class="final-trophies" id="final-trophies"></div>
+                </div>
+                <button class="close-page-btn" id="close-page-btn">Close This Page</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const items = [
+            { name: 'Apple', emoji: '🍎', price: 3 },
+            { name: 'Banana', emoji: '🍌', price: 2 },
+            { name: 'Orange', emoji: '🍊', price: 4 },
+            { name: 'Watermelon', emoji: '🍉', price: 8 },
+            { name: 'Milk', emoji: '🥛', price: 5 },
+            { name: 'Cake', emoji: '🍰', price: 11 },
+            { name: 'Ice Cream', emoji: '🍦', price: 7 },
+            { name: 'Candy', emoji: '🍬', price: 3 },
+            { name: 'Chocolate', emoji: '🍫', price: 10 },
+            { name: 'Juice', emoji: '🧃', price: 5 },
+            { name: 'Strawberry', emoji: '🍓', price: 6 },
+            { name: 'Grape', emoji: '🍇', price: 9 },
+        ];
+
+        let score = 0;
+        let correctCount = 0;
+        let currentItems = [];
+        let correctAnswer = 0;
+        let trophyCount = 0;
+        let gameActive = true;
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function displayShelves() {
+            const shelvesDiv = document.getElementById('shelves');
+            const shuffledItems = shuffleArray(items);
+            shelvesDiv.innerHTML = '';
+            
+            shuffledItems.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'item';
+                itemDiv.innerHTML = `
+                    <div class="item-emoji">${item.emoji}</div>
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">$${item.price}</div>
+                `;
+                shelvesDiv.appendChild(itemDiv);
+            });
+        }
+
+        function generateQuestion() {
+            const questionType = Math.floor(Math.random() * 3);
+            const shuffled = shuffleArray(items);
+            currentItems = [];
+            correctAnswer = 0;
+
+            if (questionType === 0) {
+                // 3种商品，各1个
+                for (let i = 0; i < 3; i++) {
+                    currentItems.push({ item: shuffled[i], quantity: 1 });
+                    correctAnswer += shuffled[i].price;
+                }
+            } else if (questionType === 1) {
+                // 4种商品，各1个
+                for (let i = 0; i < 4; i++) {
+                    currentItems.push({ item: shuffled[i], quantity: 1 });
+                    correctAnswer += shuffled[i].price;
+                }
+            } else {
+                // 2种商品，其中一种多份
+                const quantity = Math.floor(Math.random() * 3) + 2; // 2-4份
+                currentItems.push({ item: shuffled[0], quantity: quantity });
+                currentItems.push({ item: shuffled[1], quantity: 1 });
+                correctAnswer = shuffled[0].price * quantity + shuffled[1].price;
+            }
+        }
+
+        function newQuestion() {
+            if (!gameActive) return;
+            
+            generateQuestion();
+
+            const wantedItemsList = document.getElementById('wanted-items');
+            const itemsText = currentItems.map(ci => 
+                ci.quantity > 1 
+                    ? `${ci.item.emoji}${ci.item.name} x${ci.quantity}` 
+                    : `${ci.item.emoji}${ci.item.name}`
+            ).join(', ');
+            wantedItemsList.textContent = itemsText;
+
+            document.getElementById('answer-input').value = '';
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('feedback').className = 'feedback';
+        }
+
+        function checkAnswer() {
+            if (!gameActive) return;
+            
+            const userAnswer = parseInt(document.getElementById('answer-input').value);
+            const feedback = document.getElementById('feedback');
+
+            if (isNaN(userAnswer) || userAnswer === 0) {
+                feedback.textContent = 'Please enter a number!';
+                feedback.className = 'feedback incorrect';
+                return;
+            }
+
+            if (userAnswer === correctAnswer) {
+                score++;
+                correctCount++;
+                
+                // 构建计算说明
+                const calculation = currentItems.map(ci => 
+                    ci.quantity > 1 
+                        ? `${ci.item.name} $${ci.item.price} x${ci.quantity}` 
+                        : `${ci.item.name} $${ci.item.price}`
+                ).join(' + ');
+                
+                feedback.textContent = `🎉 Great job! Correct! ${calculation} = $${correctAnswer}`;
+                feedback.className = 'feedback correct';
+
+                document.getElementById('score').textContent = score;
+
+                // 显示星星特效
+                createStarEffect();
+
+                // 每5分给一个奖杯
+                if (score % 5 === 0) {
+                    addTrophy();
+                    showCelebration();
+                }
+
+                setTimeout(() => {
+                    newQuestion();
+                }, 2500);
+            } else {
+                const calculation = currentItems.map(ci => 
+                    ci.quantity > 1 
+                        ? `${ci.item.name} $${ci.item.price} x${ci.quantity}` 
+                        : `${ci.item.name} $${ci.item.price}`
+                ).join(' + ');
+                
+                feedback.textContent = `❌ Try again! ${calculation} = ?`;
+                feedback.className = 'feedback incorrect';
+            }
+        }
+
+        function createStarEffect() {
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star-effect';
+                    star.textContent = '⭐';
+                    star.style.left = Math.random() * window.innerWidth + 'px';
+                    star.style.top = Math.random() * 200 + 'px';
+                    document.body.appendChild(star);
+
+                    setTimeout(() => {
+                        document.body.removeChild(star);
+                    }, 2000);
+                }, i * 100);
+            }
+        }
+
+        function addTrophy() {
+            trophyCount++;
+            const trophiesDiv = document.getElementById('trophies');
+            const trophy = document.createElement('span');
+            trophy.className = 'trophy-item';
+            trophy.textContent = '🏆';
+            trophiesDiv.appendChild(trophy);
+        }
+
+        function showCelebration() {
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.textContent = '🎊';
+            document.body.appendChild(celebration);
+
+            setTimeout(() => {
+                document.body.removeChild(celebration);
+            }, 1000);
+        }
+
+        document.getElementById('num-submit-btn').addEventListener('click', checkAnswer);
+        document.getElementById('answer-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // 数字按钮事件
+        document.querySelectorAll('.number-btn[data-num]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const input = document.getElementById('answer-input');
+                input.value = (input.value || '') + btn.dataset.num;
+            });
+        });
+
+        // 清除按钮
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            document.getElementById('answer-input').value = '';
+        });
+
+        // 结束游戏按钮
+        document.getElementById('end-game-btn').addEventListener('click', () => {
+            gameActive = false;
+            document.getElementById('final-score').textContent = score;
+            
+            const finalTrophiesDiv = document.getElementById('final-trophies');
+            finalTrophiesDiv.innerHTML = '';
+            for (let i = 0; i < trophyCount; i++) {
+                finalTrophiesDiv.innerHTML += '🏆 ';
+            }
+            
+            document.getElementById('final-result').style.display = 'block';
+            document.getElementById('end-game-btn').style.display = 'none';
+        });
+
+        // 关闭页面按钮
+        document.getElementById('close-page-btn').addEventListener('click', () => {
+            window.close();
+        });
+
+        // 初始化游戏
+        displayShelves();
+        newQuestion();
+    </script>
+</body>
+</html>

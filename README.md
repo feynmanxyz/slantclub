@@ -1,2 +1,2 @@
-# slantclub
-Slant Club Math Practice
+# edu
+Education Essential For Everyone

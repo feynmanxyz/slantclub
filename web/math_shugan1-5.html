@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gr1 Number Sense</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 30px;
+            padding: 25px 40px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .header h1 {
+            color: #447bf1;
+            font-size: 2.2em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h2 {
+            color: #4ecdc4;
+            font-size: 1.3em;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 15px;
+            border-radius: 20px;
+            margin-bottom: 15px;
+        }
+
+        .difficulty {
+            display: flex;
+            gap: 5px;
+        }
+
+        .difficulty i {
+            color: #f1c40f;
+            font-size: 1.8em;
+            filter: drop-shadow(2px 2px 3px rgba(0, 0, 0, 0.2));
+        }
+
+        .stamps {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1;
+            justify-content: center;
+        }
+
+        .stamp {
+            font-size: 2.5em;
+            color: #e67e22;
+            animation: stampPop 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes stampPop {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        .score-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .score-display i {
+            color: #f39c12;
+            font-size: 1.3em;
+        }
+
+        .timer {
+            text-align: center;
+            font-size: 1.4em;
+            color: #e74c3c;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #ffe0e0;
+            border-radius: 12px;
+        }
+
+        .question-prompt {
+            text-align: center;
+            font-size: 1.6em;
+            color: #2c3e50;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            padding: 12px 20px;
+            background: #e3f2fd;
+            border-radius: 12px;
+            border: 3px solid #2196f3;
+        }
+
+        .number-line-container {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe8cc 100%);
+            padding: 40px 30px;
+            border-radius: 20px;
+            margin-bottom: 0px;
+            min-height: 200px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .number-line {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .line {
+            height: 4px;
+            background: #34495e;
+            position: relative;
+            border-radius: 2px;
+        }
+
+        .arrow {
+            position: absolute;
+            right: -10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 12px solid #34495e;
+            border-top: 8px solid transparent;
+            border-bottom: 8px solid transparent;
+        }
+
+        .arrow-label {
+            position: absolute;
+            right: -15px;
+            top: -35px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #34495e;
+        }
+
+        .tick {
+            position: absolute;
+            width: 2px;
+            height: 20px;
+            background: #34495e;
+            top: -8px;
+        }
+
+        .point {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            top: -6px;
+            transform: translateX(-50%);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .point:hover {
+            transform: translateX(-50%) scale(1.2);
+        }
+
+        .known-point {
+            background: #27ae60;
+            box-shadow: 0 0 0 4px rgba(39, 174, 96, 0.3);
+        }
+
+        .unknown-point {
+            background: #e74c3c;
+            box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.3);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 4px rgba(231, 76, 60, 0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(231, 76, 60, 0.1); }
+        }
+
+        .label {
+            position: absolute;
+            top: 30px;
+            transform: translateX(-50%);
+            font-size: 1.4em;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .known-label {
+            color: #27ae60;
+        }
+
+        .unknown-label {
+            color: #e74c3c;
+        }
+
+        .zero-marker {
+            position: absolute;
+            top: -40px;
+            transform: translateX(-50%);
+            font-size: 1em;
+            font-weight: bold;
+            color: #2c3e50;
+            background: #fff;
+            padding: 1px 5px;
+            border-radius: 5px;
+            border: 2px solid #2c3e50;
+        }
+
+        .animal-icon {
+            position: absolute;
+            top: -50px;
+            transform: translateX(-50%);
+            font-size: 2.5em;
+            animation: hop 0.5s ease-in-out;
+        }
+
+        @keyframes hop {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-15px); }
+        }
+
+        .jump-arc {
+            position: absolute;
+            top: -25px;
+            height: 60px;
+            border: 4px dashed #27ae60;
+            border-bottom: none;
+            border-left: none;
+            border-right: none;
+            border-top-left-radius: 100%;
+            border-top-right-radius: 100%;
+            opacity: 0.7;
+        }
+
+        .jump-instruction {
+            position: absolute;
+            top: -80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff3cd;
+            padding: 8px 15px;
+            border-radius: 10px;
+            border: 2px solid #ffc107;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #856404;
+            white-space: nowrap;
+        }
+
+        .input-area {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-area input {
+            font-size: 2em;
+            padding: 15px 25px;
+            border: 3px solid #4ecdc4;
+            border-radius: 15px;
+            width: 200px;
+            text-align: center;
+            font-weight: bold;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: #ff6b6b;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e063 100%);
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.8em;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .end-btn {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        }
+
+        .feedback {
+            text-align: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 40px;
+            animation: feedbackPulse 0.5s ease-in-out;
+        }
+
+        @keyframes feedbackPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .feedback.correct {
+            color: #27ae60;
+        }
+
+        .feedback.incorrect {
+            color: #e74c3c;
+        }
+
+        .hint {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 1.1em;
+            margin-top: 20px;
+            margin-bottom: 15px;
+        }
+
+        .end-btn-container {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .star-effect {
+            position: fixed;
+            font-size: 3em;
+            color: #f1c40f;
+            pointer-events: none;
+            animation: starBurst 1s ease-out forwards;
+        }
+
+        @keyframes starBurst {
+            0% { transform: translate(0, 0) scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(1.5) rotate(720deg); opacity: 0; }
+        }
+
+        .end-screen {
+            text-align: center;
+            padding: 30px;
+        }
+
+        .end-screen h2 {
+            color: #ff6b6b;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .end-screen .final-score {
+            font-size: 3em;
+            color: #4ecdc4;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .end-screen .message {
+            font-size: 1.8em;
+            color: #e67e22;
+            margin: 15px 0;
+        }
+
+        .end-screen .rest-message {
+            font-size: 1.3em;
+            color: #95a5a6;
+            margin: 20px 0;
+        }
+
+        .restart-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gr1 Number Sense:  Addition (Multiple Jumps from the Origin)</h1>
+        </div>
+
+        <div id="gameScreen">
+            <div class="stats-bar">
+                <div class="difficulty">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stamps" id="stampsContainer"></div>
+                <div class="score-display">
+                    <i class="fas fa-trophy"></i>
+                    <span id="scoreDisplay">0</span>
+                </div>
+            </div>
+
+            <div class="timer">
+                Eye Rest Timer：<span id="timerDisplay">5:00</span>
+            </div>
+
+            <div class="number-line-container">
+                <div class="number-line" id="numberLine">
+                    <div class="line" id="mainLine"></div>
+                </div>
+            </div>
+
+            <div class="question-prompt" id="questionPrompt">
+                ❓ What is the position number after jumping 3 times?
+            </div>
+
+            <div class="input-area">
+                <input type="number" id="answerInput" placeholder="?" autofocus>
+            </div>
+
+            <div style="text-align: center;">
+                <button class="submit-btn" id="submitBtn">Submit Answer</button>
+            </div>
+
+            <div class="feedback" id="feedback"></div>
+
+            <div class="hint">Observe the landing point of the first jump to determine how many squares to jump each time. Count the landing points after a total of several jumps. 
+                <br>Earn 1 point for each correct answer, deduct 1 point for consecutive incorrect answers, and receive a badge for every 5 points earned. Good luck!
+                </div>
+
+            <div class="end-btn-container">
+                <button class="submit-btn end-btn" id="endBtn">End Game</button>
+                <br><button class="submit-btn end-btn" id="closeBtn1" onclick="closeWindow()" style="margin-top: 15px; background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);">Close Window</button>
+            </div>
+        </div>
+
+        <div id="endScreen" class="end-screen hidden"></div>
+    </div>
+
+    <script>
+    	document.oncontextmenu = function (){ return false; };
+    	document.onselectstart = function (){ return false; };
+        let sessionCheckTimer5 = null; // 5秒验证计时器
+        let sessionCheckTimer60 = null; // 60秒验证计时器
+        // 游戏状态
+        let failmax=3; //define fail max cnt
+        let failcnt=0;
+        let score = 0;
+        let currentAnswer = 0;
+        let timeLeft = 300; // 5分钟 = 300秒
+        let timerInterval = null;
+        let gameActive = true;
+        let jumpStep = 2; // 每次跳跃的间隔（2-5）
+        let totalJumps = 5; // 总跳跃次数（2-10）
+        let currentAnimal = 'fa-dog'; // 当前动物图标
+
+        // 动物图标库
+        const animalIcons = [
+            'fa-dog', 'fa-horse', 'fa-cat', 'fa-frog', 
+            'fa-crow', 'fa-hippo', 'fa-spider', 'fa-kiwi-bird'
+        ];
+
+        // 会话验证函数
+        async function checkSession() {
+            try {
+                const response = await fetch('/update_score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        kid: '1',
+                        pgid: '101',
+                        pgsrc: window.location.href,
+                        sctype: 'check'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // 如果验证失败，显示过期界面
+                if (!response.ok || (data && data.error)) {
+                    showSessionExpired();
+                    return false;
+                }
+                
+                return true;
+            } catch (error) {
+                console.error('会话验证错误:', error);
+                // 网络错误时也显示过期界面
+                showSessionExpired();
+                return false;
+            }
+        }
+
+        // 显示会话过期界面
+        function showSessionExpired() {
+            // 停止所有计时器
+            gameActive = false;
+            clearInterval(timerInterval);
+            clearTimeout(sessionCheckTimer5);
+            clearTimeout(sessionCheckTimer60);
+            
+            const gameScreen = document.getElementById('gameScreen');
+            const endScreen = document.getElementById('endScreen');
+            
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            
+            endScreen.innerHTML = `
+                <h2>⏱️ 会话已过期</h2>
+                <div class="message" style="font-size: 1.5em; margin: 30px 0;">您的会话已过期，请重新登录。</div>
+                <button class="submit-btn restart-btn" onclick="closeWindow()">关闭本页</button>
+            `;
+        }
+
+        // 关闭窗口函数
+        function closeWindow() {
+            window.close();
+            // 如果window.close()不起作用（某些浏览器限制），提示用户手动关闭
+            setTimeout(() => {
+                alert('请手动关闭本页面');
+            }, 100);
+        }
+
+        // 页面打开时立即进行第一次会话验证
+        //checkSession();
+
+        // 音频上下文（用于生成欢呼声）
+        function playCheer(isSpecial = false) {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = isSpecial ? 800 : 600;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(isSpecial ? 0.3 : 0.2, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.5);
+        }
+
+        // 生成随机题目
+        function generateQuestion() {
+            failcnt=0;
+            const mainLine = document.getElementById('mainLine');
+            mainLine.innerHTML = '';
+            
+            // 随机选择动物图标
+            currentAnimal = animalIcons[Math.floor(Math.random() * animalIcons.length)];
+            
+            // 随机选择每次跳跃的间隔（2-5）
+            jumpStep = Math.floor(Math.random() * 4) + 2; // 2, 3, 4, 5
+            
+            // 随机选择总跳跃次数（2-10），但确保总步数不超过35
+            const maxJumpsAllowed = Math.min(10, Math.floor(35 / jumpStep));
+            totalJumps = Math.floor(Math.random() * (maxJumpsAllowed - 2 + 1)) + 2; // 2到maxJumpsAllowed
+            
+            // 计算最终落点
+            const finalPosition = jumpStep * totalJumps;
+            currentAnswer = finalPosition;
+            
+            // 数轴范围：从0到最终落点+一些余量
+            const minValue = 0;
+            const maxValue = finalPosition + 3;
+            const totalRange = maxValue - minValue;
+            
+            // 绘制刻度线（每个单位一个刻度）
+            for (let i = 0; i <= totalRange; i++) {
+                const tick = document.createElement('div');
+                tick.className = 'tick';
+                tick.style.left = `${(i / totalRange) * 100}%`;
+                mainLine.appendChild(tick);
+            }
+            
+            // 标记0点（起点）
+            const zeroPosition = ((0 - minValue) / totalRange) * 100;
+            const zeroMarker = document.createElement('div');
+            zeroMarker.className = 'zero-marker';
+            zeroMarker.textContent = '0';
+            zeroMarker.style.left = `${zeroPosition}%`;
+            mainLine.appendChild(zeroMarker);
+            
+            // 添加"起点"标签
+            const startLabel = document.createElement('div');
+            startLabel.className = 'label';
+            startLabel.textContent = 'Start';
+            startLabel.style.left = `${zeroPosition}%`;
+            startLabel.style.color = '#2c3e50';
+            startLabel.style.fontSize = '1.2em';
+            mainLine.appendChild(startLabel);
+            
+            // 标记第一次跳跃的落点（绿色已知点）
+            const firstJumpPosition = ((jumpStep - minValue) / totalRange) * 100;
+            const firstJumpPoint = document.createElement('div');
+            firstJumpPoint.className = 'point known-point';
+            firstJumpPoint.style.left = `${firstJumpPosition}%`;
+            mainLine.appendChild(firstJumpPoint);
+            
+            const firstJumpLabel = document.createElement('div');
+            firstJumpLabel.className = 'label known-label';
+            firstJumpLabel.textContent = jumpStep;
+            firstJumpLabel.style.left = `${firstJumpPosition}%`;
+            mainLine.appendChild(firstJumpLabel);
+            
+            // 在第一次跳跃位置添加动物图标
+            const animalIcon = document.createElement('i');
+            animalIcon.className = `fas ${currentAnimal} animal-icon`;
+            animalIcon.style.left = `${firstJumpPosition}%`;
+            animalIcon.style.color = '#27ae60';
+            mainLine.appendChild(animalIcon);
+            
+            // 添加从0点到第一次跳跃位置的弧线
+            const jumpArc = document.createElement('div');
+            jumpArc.className = 'jump-arc';
+            jumpArc.style.left = `${zeroPosition}%`;
+            jumpArc.style.width = `${firstJumpPosition - zeroPosition}%`;
+            mainLine.appendChild(jumpArc);
+            
+            // 更新问题提示
+            const questionPrompt = document.getElementById('questionPrompt');
+            questionPrompt.textContent = `❓ What is the position after jumping ${totalJumps} times from the starting point?`;
+            
+            // 添加箭头表示正方向
+            const arrow = document.createElement('div');
+            arrow.className = 'arrow';
+            mainLine.appendChild(arrow);
+            
+            // 添加正方向标签
+            const arrowLabel = document.createElement('div');
+            arrowLabel.className = 'arrow-label';
+            arrowLabel.textContent = '→';
+            mainLine.appendChild(arrowLabel);
+        }
+
+        // 创建星星效果
+        function createStarEffect() {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('i');
+                    star.className = 'fas fa-star star-effect';
+                    star.style.left = Math.random() * window.innerWidth + 'px';
+                    star.style.top = Math.random() * window.innerHeight + 'px';
+                    star.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                    star.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                    document.body.appendChild(star);
+                    
+                    setTimeout(() => star.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
+        // 添加徽章
+        function addStamp() {
+            const stampsContainer = document.getElementById('stampsContainer');
+            const currentStampCount = Math.floor(score / 5);
+            const displayedStampCount = stampsContainer.children.length;
+            
+            // 只有当应得徽章数大于已显示徽章数时才添加
+            if (currentStampCount > displayedStampCount) {
+                const stamp = document.createElement('i');
+                stamp.className = 'fas fa-award stamp';
+                stampsContainer.appendChild(stamp);
+            }
+        }
+
+        // 更新徽章显示（用于扣分时同步）
+        function updateStamps() {
+            const stampsContainer = document.getElementById('stampsContainer');
+            const currentStampCount = Math.floor(score / 5);
+            const displayedStampCount = stampsContainer.children.length;
+            
+            // 如果扣分导致徽章数减少，移除多余的徽章
+            if (currentStampCount < displayedStampCount) {
+                while (stampsContainer.children.length > currentStampCount) {
+                    stampsContainer.removeChild(stampsContainer.lastChild);
+                }
+            }
+        }
+
+        // 更新分数显示
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = score;
+        }
+
+        // 检查答案
+        function checkAnswer() {
+            if (!gameActive) return;
+            
+            const userAnswer = parseInt(document.getElementById('answerInput').value);
+            const feedback = document.getElementById('feedback');
+            
+            if (isNaN(userAnswer)) {
+                feedback.textContent = 'Please Input Number！';
+                feedback.className = 'feedback incorrect';
+                return;
+            }
+            
+            if (userAnswer === currentAnswer) {
+                score++;
+                updateScore();
+                feedback.textContent = 'You got it right. Amazing!';
+                feedback.className = 'feedback correct';
+                
+                // 检查是否获得徽章
+                if (score % 5 === 0 && score > 0) {
+                    addStamp();
+                    playCheer(true); // 特殊欢呼声
+                } else {
+                    playCheer(false); // 普通欢呼声
+                }
+                
+                createStarEffect();
+                
+                // 延迟生成下一题
+                setTimeout(() => {
+                    generateQuestion();
+                    document.getElementById('answerInput').value = '';
+                    feedback.textContent = '';
+                    document.getElementById('answerInput').focus();
+                }, 1500);
+                failcnt=0;
+            } else {
+                failcnt=failcnt+1;
+                if(failcnt<failmax)feedback.textContent = 'Keep going, try again!';
+                else if(failcnt==failmax){
+                    score = Math.max(0, score - 1); // 扣1分，但不低于0
+                    updateScore();
+                    updateStamps(); // 同步更新徽章数量
+                    feedback.textContent = 'Keep trying! Check carefully and try again! (1 point has been deducted for consecutive errors.)';
+                }else {
+                    setTimeout(() => {
+                        generateQuestion();
+                    }, 1500);  // 延迟生成下一题
+                    feedback.textContent = 'If wrong after multiple times, switch to a new question.';
+                }
+                feedback.className = 'feedback incorrect';
+                document.getElementById('answerInput').value = '';
+                document.getElementById('answerInput').focus();
+            }
+        }
+
+        // 倒计时
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                document.getElementById('timerDisplay').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        // 结束游戏
+        async function endGame() {
+            gameActive = false;
+            clearInterval(timerInterval);
+            
+            // 上传分数到服务器
+            try {
+                const response = await fetch('/update_score', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        kid: '1',
+                        pgid: '101',
+                        pgsrc: window.location.href,
+                        sctype: 'add',
+                        score: score
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('Score uploaded successfully');
+                } else {
+                    console.error('Score uploaded failed');
+                }
+            } catch (error) {
+                console.error('Score uploaded error:', error);
+            }
+            
+            const gameScreen = document.getElementById('gameScreen');
+            const endScreen = document.getElementById('endScreen');
+            
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            
+            let message = '';
+            if (score < 15) {
+                message = 'Keep Going！';
+            } else if (score < 25) {
+                message = 'You are awesome！';
+            } else {
+                message = 'You are a little genius!！';
+            }
+            
+            const stampCount = Math.floor(score / 5);
+            
+            endScreen.innerHTML = `
+                <h2>🎉 Great, you have completed this exercise.！</h2>
+                <div class="final-score">The score：${score} </div>
+                <div class="final-score">Stamps：${stampCount} </div>
+                <div class="message">${message}</div>
+                <div class="rest-message">Take a break; your eyes and brain need to relax. 😊</div>
+                <div class="rest-message" style="color: #27ae60; font-size: 1.2em; margin-top: 10px;">✓ Good Job.</div>
+                <button class="submit-btn restart-btn" onclick="restartGame()">Try Again</button>
+            `;
+        }
+
+        // 重新开始游戏
+        function restartGame() {
+            score = 0;
+            timeLeft = 300;
+            gameActive = true;
+            
+            document.getElementById('scoreDisplay').textContent = '0';
+            document.getElementById('stampsContainer').innerHTML = '';
+            document.getElementById('gameScreen').classList.remove('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('answerInput').value = '';
+            document.getElementById('feedback').textContent = '';
+            
+            generateQuestion();
+            startTimer();
+        }
+
+        // 事件监听
+        document.getElementById('submitBtn').addEventListener('click', checkAnswer);
+        document.getElementById('endBtn').addEventListener('click', endGame);
+        document.getElementById('answerInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+
+        // 初始化游戏
+        generateQuestion();
+        startTimer();
+
+        // 设置5秒后的会话验证
+        sessionCheckTimer5 = setTimeout(() => {
+            checkSession();
+        }, 500000);
+        
+        // 设置60秒后的会话验证
+        sessionCheckTimer60 = setTimeout(() => {
+            checkSession();
+        }, 600000);
+    </script>
+</body>
+</html>
