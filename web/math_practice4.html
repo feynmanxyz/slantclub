@@ -334,6 +334,10 @@
             <div class="question-section">
                 <div class="question" id="question">Ready to start...</div>
                 
+                <div class="input-section">
+                    <input type="number" id="answer" placeholder="Enter answer" autocomplete="off">
+                    <button class="submit-btn" onclick="checkAnswer()">Submit</button>
+                </div>
                 <div class="number-pad">
                     <button class="number-btn" onclick="addNumber(1)">1</button>
                     <button class="number-btn" onclick="addNumber(2)">2</button>
@@ -348,10 +352,6 @@
                     <button class="number-btn clear" onclick="clearAnswer()">Clear</button>
                 </div>
 
-                <div class="input-section">
-                    <input type="number" id="answer" placeholder="Enter answer" autocomplete="off">
-                    <button class="submit-btn" onclick="checkAnswer()">Submit</button>
-                </div>
                 <div class="message" id="message"></div>
             </div>
 
