@@ -1,0 +1,1254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 数字迷宫大冒险</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            font-size: 3em;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0px); }
+            to { transform: translateY(-10px); }
+        }
+
+        .settings-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .settings-panel h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .setting-group {
+            margin-bottom: 20px;
+        }
+
+        .setting-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 1.2em;
+        }
+
+        .setting-group select,
+        .setting-group input {
+            width: 100%;
+            padding: 12px;
+            border: 3px solid #667eea;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-family: inherit;
+        }
+
+        .setting-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .setting-row input {
+            width: 100px;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 15px;
+            color: white;
+            font-size: 2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(245, 87, 108, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .start-btn:active {
+            transform: scale(0.98);
+        }
+
+        .game-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            display: none;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .game-panel.active {
+            display: block;
+        }
+
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 15px;
+        }
+
+        .timer {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2d3436;
+            background: rgba(255,255,255,0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .lives {
+            font-size: 2em;
+        }
+
+        .heart {
+            color: #ff4757;
+            margin: 0 3px;
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .rule-display {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            text-align: center;
+        }
+
+        .maze-container {
+            width: 100%;
+            margin: 0 auto;
+            background: linear-gradient(135deg, #e0e7ff 0%, #cfd9df 100%);
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .maze-wrapper {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .maze {
+            display: inline-grid;
+            gap: 4px;
+            background: linear-gradient(135deg, #d4dce6 0%, #e8eef3 100%);
+            padding: 10px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .cell {
+            width: 100%;
+            aspect-ratio: 3/2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #a8b8d8;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            min-width: 40px;
+            min-height: 27px;
+        }
+
+        .cell.start,
+        .cell.end {
+            font-size: 2em;
+        }
+
+        .cell.current {
+            font-size: 2em;
+        }
+
+        .cell-value {
+            font-size: 1em;
+        }
+
+        .cell-expression {
+            font-size: 0.85em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .cell:hover:not(.start):not(.end) {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .cell.start {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: white;
+            font-size: 2em;
+            border-color: #a8edea;
+        }
+
+        .cell.end {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            font-size: 2em;
+            border-color: #38f9d7;
+        }
+
+        .cell.current {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            transform: scale(1.15);
+            box-shadow: 0 0 20px rgba(250, 112, 154, 0.8);
+            animation: pulse 0.6s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1.15); }
+            to { transform: scale(1.25); }
+        }
+
+        .cell.correct {
+            background: #4CAF50;
+            color: white;
+            animation: correctBounce 0.5s;
+        }
+
+        @keyframes correctBounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .cell.wrong {
+            background: #f44336;
+            color: white;
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .cell.visited {
+            background: #b8e994;
+        }
+
+        .cell.show-correct {
+            background: #81c784;
+        }
+
+        .cell.show-player-path {
+            background: #ffeb3b;
+            border-color: #fbc02d;
+            border-width: 3px;
+        }
+
+        .cell-value {
+            font-size: 1.2em;
+        }
+
+        .cell-expression {
+            font-size: 0.75em;
+            color: #666;
+        }
+
+        .controls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .control-buttons {
+            display: grid;
+            grid-template-columns: 140px 1fr 70px 70px 70px 1fr 140px;
+            grid-template-rows: 50px 60px;
+            gap: 10px;
+            margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            align-items: center;
+        }
+
+        .font-btn {
+            padding: 10px 15px;
+            background: linear-gradient(135deg, #4fd1c5 0%, #63b3ed 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.9em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .font-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .font-btn.smaller { grid-column: 2; grid-row: 2; justify-self: end; }
+        .font-btn.larger { grid-column: 6; grid-row: 2; justify-self: start; }
+
+        .direction-pad {
+            display: contents;
+        }
+
+        .control-btn {
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .control-btn:active {
+            transform: scale(0.95);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .control-btn.up { grid-column: 4; grid-row: 1; }
+        .control-btn.left { grid-column: 3; grid-row: 2; }
+        .control-btn.down { grid-column: 4; grid-row: 2; }
+        .control-btn.right { grid-column: 5; grid-row: 2; }
+
+        .reset-btn {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            height: 60px;
+        }
+
+        .reset-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .reset-btn.left-btn {
+            grid-column: 1;
+            grid-row: 2;
+        }
+
+        .reset-btn.right-btn {
+            grid-column: 7;
+            grid-row: 2;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            animation: modalPop 0.5s;
+        }
+
+        @keyframes modalPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .modal-content.win h2 {
+            color: #4CAF50;
+        }
+
+        .modal-content.lose h2 {
+            color: #f44336;
+        }
+
+        .modal-content p {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+
+        .hint {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            font-size: 1em;
+            color: #1976d2;
+        }
+
+        .close-page-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+
+        .close-page-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(238, 9, 121, 0.4);
+        }
+
+        /* 星星闪烁效果 */
+        .sparkle {
+            position: fixed;
+            font-size: 2em;
+            pointer-events: none;
+            z-index: 9999;
+            animation: sparkleFloat 1s ease-out forwards;
+        }
+
+        @keyframes sparkleFloat {
+            0% {
+                opacity: 1;
+                transform: translateY(0) scale(0.5);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-100px) scale(1.5);
+            }
+        }
+
+        /* 成功庆祝效果 */
+        .celebration {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10em;
+            z-index: 9999;
+            pointer-events: none;
+            animation: celebrationPop 1.5s ease-out forwards;
+        }
+
+        @keyframes celebrationPop {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+
+        /* 错误提示效果 */
+        .error-flash {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 8em;
+            z-index: 9999;
+            pointer-events: none;
+            animation: errorShake 0.8s ease-out forwards;
+        }
+
+        @keyframes errorShake {
+            0%, 100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0);
+            }
+            10% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            20%, 40%, 60%, 80% {
+                transform: translate(-50%, -50%) translateX(-20px) scale(1);
+            }
+            30%, 50%, 70% {
+                transform: translate(-50%, -50%) translateX(20px) scale(1);
+            }
+            90% {
+                opacity: 1;
+            }
+        }
+
+        /* 生命值丢失动画 */
+        .life-loss {
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4em;
+            color: #ff4757;
+            font-weight: bold;
+            z-index: 9999;
+            pointer-events: none;
+            animation: lifeLoss 1s ease-out forwards;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        @keyframes lifeLoss {
+            0% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(0) scale(0.5);
+            }
+            30% {
+                opacity: 1;
+                transform: translateX(-50%) translateY(-20px) scale(1.3);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-60px) scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 数字迷宫大冒险</h1>
+        
+        <div class="settings-panel" id="settingsPanel">
+            <h2>🎯 游戏设置</h2>
+            
+            <div class="setting-group">
+                <label>迷宫大小：</label>
+                <div class="setting-row">
+                    <span>横向：</span>
+                    <input type="number" id="cols" min="5" max="20" value="6">
+                    <span>竖向：</span>
+                    <input type="number" id="rows" min="5" max="30" value="6">
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label>可行走路径规则：</label>
+                <select id="pathRule">
+                    <option value="odd">只能走奇数格子 🔢</option>
+                    <option value="even">只能走偶数格子 🔢</option>
+                    <option value="multiple3">只能走3的倍数格子 ✖️3</option>
+                </select>
+            </div>
+
+            <div class="setting-group">
+                <label>难度级别：</label>
+                <select id="difficulty">
+                    <option value="1">简单 - 直接显示数字</option>
+                    <option value="2">困难 - 显示算式（两位数加减）</option>
+                </select>
+            </div>
+
+            <div class="hint">
+                💡 提示：选择好设置后，点击开始按钮。你需要从入口（🚀）走到出口（🏁），只能踩在符合规则的数字上！
+            </div>
+
+            <button class="start-btn" onclick="startGame()">🚀 开始游戏</button>
+        </div>
+
+        <div class="game-panel" id="gamePanel">
+            <div class="game-info">
+                <div class="lives" id="lives"></div>
+                <div class="timer" id="timer">⏱️ 00:00</div>
+                <div class="rule-display" id="ruleDisplay"></div>
+            </div>
+
+            <div class="maze-wrapper">
+                <div class="maze-container">
+                    <div class="maze" id="maze"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-buttons">
+                    <button class="font-btn larger" onclick="adjustFontSize(0.1)">🔤➕ 字体变大</button>
+                    <button class="reset-btn left-btn" onclick="resetToSettings()">🔄 重新设置</button>
+                    <button class="font-btn smaller" onclick="adjustFontSize(-0.1)">🔤➖ 字体变小</button>
+                    <button class="control-btn up" onclick="move('up')">⬆️</button>
+                    <button class="control-btn left" onclick="move('left')">⬅️</button>
+                    <button class="control-btn down" onclick="move('down')">⬇️</button>
+                    <button class="control-btn right" onclick="move('right')">➡️</button>
+                    <button class="reset-btn right-btn" onclick="restartGame()">🎮 重新开始</button>
+                </div>
+                <button class="close-page-btn" onclick="window.close()">❌ 关闭页面</button>
+            </div>
+        </div>
+
+        <div class="modal" id="modal">
+            <div class="modal-content" id="modalContent">
+                <h2 id="modalTitle"></h2>
+                <p id="modalMessage"></p>
+                <button class="reset-btn" onclick="closeModal()">关闭</button>
+                <button class="reset-btn" onclick="restartGame(); closeModal();">再玩一次</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let config = {
+            cols: 10,
+            rows: 12,
+            pathRule: 'odd',
+            difficulty: 1
+        };
+
+        let gameState = {
+            maze: [],
+            playerPos: { row: 0, col: 0 },
+            lives: 3,
+            visitedCells: new Set(),
+            gameOver: false,
+            won: false,
+            startTime: null,
+            timerInterval: null,
+            fontScale: 1.0
+        };
+
+        function startGame() {
+            config.cols = parseInt(document.getElementById('cols').value);
+            config.rows = parseInt(document.getElementById('rows').value);
+            config.pathRule = document.getElementById('pathRule').value;
+            config.difficulty = parseInt(document.getElementById('difficulty').value);
+
+            document.getElementById('settingsPanel').style.display = 'none';
+            document.getElementById('gamePanel').classList.add('active');
+
+            initGame();
+        }
+
+        function initGame() {
+            gameState.lives = 3;
+            gameState.visitedCells = new Set();
+            gameState.gameOver = false;
+            gameState.won = false;
+            gameState.playerPos = { row: 0, col: 0 };
+            gameState.startTime = Date.now();
+            gameState.fontScale = 1.0; // 重置字体缩放
+            
+            // 清除旧的计时器
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            
+            // 启动新计时器
+            gameState.timerInterval = setInterval(updateTimer, 1000);
+
+            generateMaze();
+            renderMaze();
+            updateLives();
+            updateRuleDisplay();
+            updateTimer();
+        }
+
+        function generateMaze() {
+            const { rows, cols, pathRule, difficulty } = config;
+            gameState.maze = [];
+
+            // 初始化迷宫
+            for (let r = 0; r < rows; r++) {
+                gameState.maze[r] = [];
+                for (let c = 0; c < cols; c++) {
+                    gameState.maze[r][c] = {
+                        value: 0,
+                        expression: '',
+                        isCorrect: false,
+                        isStart: r === 0 && c === 0,
+                        isEnd: r === rows - 1 && c === cols - 1
+                    };
+                }
+            }
+
+            // 生成一条有效路径
+            const path = generateValidPath();
+            
+            // 标记路径上的格子为正确
+            path.forEach(pos => {
+                gameState.maze[pos.row][pos.col].isCorrect = true;
+            });
+
+            // 为所有格子分配数值
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = gameState.maze[r][c];
+                    if (!cell.isStart && !cell.isEnd) {
+                        if (cell.isCorrect) {
+                            // 正确格子：生成符合规则的数
+                            cell.value = generateCorrectNumber();
+                        } else {
+                            // 干扰格子：生成不符合规则的数
+                            cell.value = generateWrongNumber();
+                        }
+
+                        if (difficulty === 2) {
+                            // 困难模式：生成算式
+                            cell.expression = generateExpression(cell.value);
+                        }
+                    }
+                }
+            }
+        }
+
+        function generateValidPath() {
+            const { rows, cols } = config;
+            const correctCells = new Set();
+            
+            // 首先生成主路径
+            const mainPath = [];
+            const visited = new Set();
+            const queue = [{ row: 0, col: 0, path: [{ row: 0, col: 0 }] }];
+            visited.add('0,0');
+
+            while (queue.length > 0) {
+                const { row, col, path: currentPath } = queue.shift();
+
+                if (row === rows - 1 && col === cols - 1) {
+                    mainPath.push(...currentPath);
+                    break;
+                }
+
+                const directions = [
+                    { dr: -1, dc: 0 },
+                    { dr: 1, dc: 0 },
+                    { dr: 0, dc: -1 },
+                    { dr: 0, dc: 1 }
+                ];
+
+                // 随机打乱方向
+                directions.sort(() => Math.random() - 0.5);
+
+                for (const { dr, dc } of directions) {
+                    const newRow = row + dr;
+                    const newCol = col + dc;
+                    const key = `${newRow},${newCol}`;
+
+                    if (newRow >= 0 && newRow < rows && 
+                        newCol >= 0 && newCol < cols && 
+                        !visited.has(key)) {
+                        
+                        visited.add(key);
+                        queue.push({
+                            row: newRow,
+                            col: newCol,
+                            path: [...currentPath, { row: newRow, col: newCol }]
+                        });
+                    }
+                }
+            }
+
+            // 将主路径添加到正确格子集合
+            mainPath.forEach(pos => {
+                correctCells.add(`${pos.row},${pos.col}`);
+            });
+
+            // 在主路径的每个格子周围添加更多更长的分叉
+            mainPath.forEach((pos, index) => {
+                // 跳过起点和终点
+                if (index === 0 || index === mainPath.length - 1) return;
+                
+                // 75%概率添加分叉
+                if (Math.random() < 0.75) {
+                    const directions = [
+                        { dr: -1, dc: 0 },
+                        { dr: 1, dc: 0 },
+                        { dr: 0, dc: -1 },
+                        { dr: 0, dc: 1 }
+                    ];
+
+                    // 随机选择1-2个方向
+                    const numBranches = Math.random() < 0.4 ? 1 : 2;
+                    const shuffledDirs = directions.sort(() => Math.random() - 0.5);
+
+                    for (let i = 0; i < numBranches; i++) {
+                        const { dr, dc } = shuffledDirs[i];
+                        
+                        // 创建3-7格的单线条分叉（再次增加长度）
+                        const branchLength = Math.floor(Math.random() * 5) + 3;
+                        let branchRow = pos.row;
+                        let branchCol = pos.col;
+                        
+                        for (let step = 0; step < branchLength; step++) {
+                            branchRow += dr;
+                            branchCol += dc;
+                            const key = `${branchRow},${branchCol}`;
+
+                            if (branchRow >= 0 && branchRow < rows && 
+                                branchCol >= 0 && branchCol < cols &&
+                                !correctCells.has(key)) {
+                                
+                                correctCells.add(key);
+                            } else {
+                                break; // 遇到边界或已存在的正确格子就停止
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 转换回数组格式
+            return Array.from(correctCells).map(key => {
+                const [row, col] = key.split(',').map(Number);
+                return { row, col };
+            });
+        }
+
+        function generateCorrectNumber() {
+            const { pathRule } = config;
+            let num;
+
+            switch (pathRule) {
+                case 'odd':
+                    num = Math.floor(Math.random() * 50) * 2 + 1; // 1-99奇数
+                    break;
+                case 'even':
+                    num = (Math.floor(Math.random() * 49) + 1) * 2; // 2-98偶数
+                    break;
+                case 'multiple3':
+                    num = (Math.floor(Math.random() * 33) + 1) * 3; // 3-99的3的倍数
+                    break;
+            }
+
+            return num;
+        }
+
+        function generateWrongNumber() {
+            const { pathRule } = config;
+            let num;
+
+            do {
+                num = Math.floor(Math.random() * 98) + 1; // 1-98
+            } while (checkNumber(num, pathRule));
+
+            return num;
+        }
+
+        function generateExpression(target) {
+            const num1 = Math.floor(Math.random() * 80) + 10; // 10-89
+            const useAdd = Math.random() > 0.5;
+            
+            if (useAdd) {
+                const num2 = target - num1;
+                if (num2 > 0 && num2 < 100) {
+                    return `${num1}+${num2}`;
+                }
+            }
+            
+            const num2 = num1 - target;
+            if (num2 > 0 && num2 < 100) {
+                return `${num1}-${num2}`;
+            }
+
+            // 如果无法生成合适的算式，返回简单的
+            return `${Math.floor(target/2)}+${target - Math.floor(target/2)}`;
+        }
+
+        function checkNumber(num, rule) {
+            switch (rule) {
+                case 'odd':
+                    return num % 2 === 1;
+                case 'even':
+                    return num % 2 === 0;
+                case 'multiple3':
+                    return num % 3 === 0;
+            }
+            return false;
+        }
+
+        function renderMaze() {
+            const mazeEl = document.getElementById('maze');
+            const { rows, cols, difficulty } = config;
+            
+            // 动态设置网格列数
+            mazeEl.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+            mazeEl.innerHTML = '';
+
+            // 根据列数自动计算基础字体大小
+            let baseFontSize;
+            if (cols <= 6) {
+                baseFontSize = 1.6;
+            } else if (cols <= 10) {
+                baseFontSize = 1.3;
+            } else if (cols <= 15) {
+                baseFontSize = 1.0;
+            } else {
+                baseFontSize = 0.8;
+            }
+            
+            // 应用用户调整的缩放
+            const finalFontSize = baseFontSize * gameState.fontScale;
+
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = gameState.maze[r][c];
+                    const cellEl = document.createElement('div');
+                    cellEl.className = 'cell';
+                    cellEl.dataset.row = r;
+                    cellEl.dataset.col = c;
+                    
+                    // 设置字体大小
+                    cellEl.style.fontSize = finalFontSize + 'em';
+
+                    const isPlayerHere = r === gameState.playerPos.row && c === gameState.playerPos.col;
+
+                    if (cell.isStart) {
+                        cellEl.classList.add('start');
+                        if (isPlayerHere) {
+                            cellEl.innerHTML = '🚀';
+                        } else {
+                            cellEl.innerHTML = '🚪';
+                        }
+                    } else if (cell.isEnd) {
+                        cellEl.classList.add('end');
+                        if (isPlayerHere) {
+                            cellEl.innerHTML = '🚀';
+                        } else {
+                            cellEl.innerHTML = '🏁';
+                        }
+                    } else {
+                        if (isPlayerHere) {
+                            cellEl.innerHTML = '🚀';
+                            cellEl.classList.add('current');
+                        } else {
+                            if (difficulty === 1) {
+                                cellEl.innerHTML = `<div class="cell-value">${cell.value}</div>`;
+                            } else {
+                                // 困难模式：只显示算式，不显示答案
+                                cellEl.innerHTML = `<div class="cell-expression">${cell.expression}</div>`;
+                            }
+                        }
+                    }
+
+                    cellEl.onclick = () => clickCell(r, c);
+                    mazeEl.appendChild(cellEl);
+                }
+            }
+        }
+
+        function adjustFontSize(delta) {
+            gameState.fontScale = Math.max(0.5, Math.min(2.0, gameState.fontScale + delta));
+            renderMaze();
+        }
+
+        function clickCell(row, col) {
+            const { playerPos } = gameState;
+            
+            // 检查是否相邻
+            const isAdjacent = 
+                (Math.abs(row - playerPos.row) === 1 && col === playerPos.col) ||
+                (Math.abs(col - playerPos.col) === 1 && row === playerPos.row);
+
+            if (isAdjacent) {
+                const dx = col - playerPos.col;
+                const dy = row - playerPos.row;
+                
+                if (dy === -1) move('up');
+                else if (dy === 1) move('down');
+                else if (dx === -1) move('left');
+                else if (dx === 1) move('right');
+            }
+        }
+
+        function move(direction) {
+            if (gameState.gameOver) return;
+
+            const { playerPos } = gameState;
+            const { rows, cols } = config;
+            let newRow = playerPos.row;
+            let newCol = playerPos.col;
+
+            switch (direction) {
+                case 'up': newRow--; break;
+                case 'down': newRow++; break;
+                case 'left': newCol--; break;
+                case 'right': newCol++; break;
+            }
+
+            // 检查边界
+            if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols) {
+                return;
+            }
+
+            const targetCell = gameState.maze[newRow][newCol];
+
+            // 检查是否是终点
+            if (targetCell.isEnd) {
+                gameState.won = true;
+                gameState.gameOver = true;
+                gameState.visitedCells.add(`${newRow},${newCol}`);
+                gameState.playerPos = { row: newRow, col: newCol };
+                renderMaze();
+                showCelebration();
+                setTimeout(() => showEndGame(), 2000);
+                return;
+            }
+
+            // 检查是否正确
+            if (targetCell.isCorrect || targetCell.isStart) {
+                // 正确的移动
+                gameState.playerPos = { row: newRow, col: newCol };
+                gameState.visitedCells.add(`${newRow},${newCol}`);
+                highlightCell(newRow, newCol, 'correct');
+                
+                // 显示星星特效
+                createSparkles();
+                
+                setTimeout(() => renderMaze(), 300);
+            } else {
+                // 错误的移动
+                gameState.lives--;
+                updateLives();
+                highlightCell(newRow, newCol, 'wrong');
+                
+                // 显示错误动画和生命值丢失
+                showErrorFlash();
+                showLifeLoss();
+                
+                if (gameState.lives === 0) {
+                    gameState.gameOver = true;
+                    setTimeout(() => showEndGame(), 1000);
+                } else {
+                    setTimeout(() => {
+                        const cellEl = document.querySelector(`[data-row="${newRow}"][data-col="${newCol}"]`);
+                        if (cellEl) {
+                            cellEl.classList.remove('wrong');
+                        }
+                    }, 500);
+                }
+            }
+        }
+
+        function highlightCell(row, col, type) {
+            const cellEl = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+            cellEl.classList.add(type);
+        }
+
+        function updateTimer() {
+            if (!gameState.startTime) return;
+            
+            const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            const timerEl = document.getElementById('timer');
+            timerEl.textContent = `⏱️ ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function createSparkles() {
+            const sparkleEmojis = ['✨', '⭐', '🌟', '💫', '⚡'];
+            const numSparkles = 8;
+            
+            for (let i = 0; i < numSparkles; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.textContent = sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)];
+                sparkle.style.left = Math.random() * window.innerWidth + 'px';
+                sparkle.style.top = Math.random() * window.innerHeight + 'px';
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => sparkle.remove(), 1000);
+            }
+        }
+
+        function showCelebration() {
+            const celebrationEmojis = ['🎉', '🎊', '🏆', '👏', '🎈'];
+            const celebration = document.createElement('div');
+            celebration.className = 'celebration';
+            celebration.textContent = celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)];
+            document.body.appendChild(celebration);
+            
+            // 同时创建更多星星
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => createSparkles(), i * 100);
+            }
+            
+            setTimeout(() => celebration.remove(), 1500);
+        }
+
+        function showErrorFlash() {
+            const errorEmojis = ['😢', '😭', '💔', '😞', '😔'];
+            const errorFlash = document.createElement('div');
+            errorFlash.className = 'error-flash';
+            errorFlash.textContent = errorEmojis[Math.floor(Math.random() * errorEmojis.length)];
+            document.body.appendChild(errorFlash);
+            
+            setTimeout(() => errorFlash.remove(), 800);
+        }
+
+        function showLifeLoss() {
+            const lifeLoss = document.createElement('div');
+            lifeLoss.className = 'life-loss';
+            lifeLoss.textContent = '-1 ❤️';
+            document.body.appendChild(lifeLoss);
+            
+            setTimeout(() => lifeLoss.remove(), 1000);
+        }
+
+        function updateLives() {
+            const livesEl = document.getElementById('lives');
+            livesEl.innerHTML = '❤️'.repeat(gameState.lives) + '🖤'.repeat(3 - gameState.lives);
+        }
+
+        function updateRuleDisplay() {
+            const ruleEl = document.getElementById('ruleDisplay');
+            const rules = {
+                'odd': '只能走奇数 🔢',
+                'even': '只能走偶数 🔢',
+                'multiple3': '只能走3的倍数 ✖️3'
+            };
+            ruleEl.textContent = rules[config.pathRule];
+        }
+
+        function showEndGame() {
+            // 停止计时器
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalMessage = document.getElementById('modalMessage');
+
+            // 计算最终时间
+            const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const timeStr = `${minutes}分${seconds}秒`;
+
+            // 显示所有正确路径和玩家路径
+            const { rows, cols } = config;
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const cell = gameState.maze[r][c];
+                    const cellEl = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
+                    
+                    cellEl.classList.remove('current', 'correct', 'wrong');
+                    
+                    if (cell.isCorrect && !cell.isStart && !cell.isEnd) {
+                        cellEl.classList.add('show-correct');
+                    }
+                    
+                    if (gameState.visitedCells.has(`${r},${c}`) && !cell.isStart && !cell.isEnd) {
+                        cellEl.classList.add('show-player-path');
+                    }
+                }
+            }
+
+            if (gameState.won) {
+                modalContent.className = 'modal-content win';
+                modalTitle.textContent = '🎉 恭喜通关！';
+                modalMessage.textContent = `太棒了！你成功走出迷宫啦！用时：${timeStr}`;
+            } else {
+                modalContent.className = 'modal-content lose';
+                modalTitle.textContent = '😢 游戏结束';
+                modalMessage.textContent = `生命值用完了，再试一次吧！用时：${timeStr}。黄色格子是你走过的路径，绿色格子是所有正确的格子。`;
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function restartGame() {
+            initGame();
+        }
+
+        function resetToSettings() {
+            document.getElementById('settingsPanel').style.display = 'block';
+            document.getElementById('gamePanel').classList.remove('active');
+        }
+
+        // 键盘控制
+        document.addEventListener('keydown', (e) => {
+            if (!gameState.gameOver) {
+                switch(e.key) {
+                    case 'ArrowUp': move('up'); break;
+                    case 'ArrowDown': move('down'); break;
+                    case 'ArrowLeft': move('left'); break;
+                    case 'ArrowRight': move('right'); break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
