@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎮 数字迷宫大冒险</title>
+    <title>🎮 Math Maze Advanture</title>
     <style>
         * {
             margin: 0;
@@ -586,43 +586,43 @@
 </head>
 <body>
     <div class="container">
-        <h1>🎮 数字迷宫大冒险</h1>
+        <h1>🎮 Math Maze Adventure</h1>
         
         <div class="settings-panel" id="settingsPanel">
-            <h2>🎯 游戏设置</h2>
+            <h2>🎯 Game Settings</h2>
             
             <div class="setting-group">
-                <label>迷宫大小：</label>
+                <label>Maze Size：</label>
                 <div class="setting-row">
-                    <span>横向：</span>
+                    <span>Column：</span>
                     <input type="number" id="cols" min="5" max="20" value="6">
-                    <span>竖向：</span>
+                    <span>Row：</span>
                     <input type="number" id="rows" min="5" max="30" value="6">
                 </div>
             </div>
 
             <div class="setting-group">
-                <label>可行走路径规则：</label>
+                <label>Path Rules：</label>
                 <select id="pathRule">
-                    <option value="odd">只能走奇数格子 🔢</option>
-                    <option value="even">只能走偶数格子 🔢</option>
-                    <option value="multiple3">只能走3的倍数格子 ✖️3</option>
+                    <option value="odd">Move On Odd Number 🔢</option>
+                    <option value="even">Move On Even Number 🔢</option>
+                    <option value="multiple3">Move On Triple Number ✖️3</option>
                 </select>
             </div>
 
             <div class="setting-group">
-                <label>难度级别：</label>
+                <label>Difficulty level：</label>
                 <select id="difficulty">
-                    <option value="1">简单 - 直接显示数字</option>
-                    <option value="2">困难 - 显示算式（两位数加减）</option>
+                    <option value="1">Easy - Direct Number</option>
+                    <option value="2">Hard - Caculation（Addition and subtraction）</option>
                 </select>
             </div>
 
             <div class="hint">
-                💡 提示：选择好设置后，点击开始按钮。你需要从入口（🚀）走到出口（🏁），只能踩在符合规则的数字上！
+                💡 Tip: After selecting your settings, click the Start button. You need to walk from the entrance (🚀) to the exit (🏁), and you can only step on the numbers that match the rules!
             </div>
 
-            <button class="start-btn" onclick="startGame()">🚀 开始游戏</button>
+            <button class="start-btn" onclick="startGame()">🚀 Start Game</button>
         </div>
 
         <div class="game-panel" id="gamePanel">
@@ -640,16 +640,16 @@
 
             <div class="controls">
                 <div class="control-buttons">
-                    <button class="font-btn larger" onclick="adjustFontSize(0.1)">🔤➕ 字体变大</button>
-                    <button class="reset-btn left-btn" onclick="resetToSettings()">🔄 重新设置</button>
-                    <button class="font-btn smaller" onclick="adjustFontSize(-0.1)">🔤➖ 字体变小</button>
+                    <button class="font-btn larger" onclick="adjustFontSize(0.1)">➕ Font ➕</button>
+                    <button class="reset-btn left-btn" onclick="resetToSettings()">🔄 Reset</button>
+                    <button class="font-btn smaller" onclick="adjustFontSize(-0.1)">➖ Font ➖</button>
                     <button class="control-btn up" onclick="move('up')">⬆️</button>
                     <button class="control-btn left" onclick="move('left')">⬅️</button>
                     <button class="control-btn down" onclick="move('down')">⬇️</button>
                     <button class="control-btn right" onclick="move('right')">➡️</button>
-                    <button class="reset-btn right-btn" onclick="restartGame()">🎮 重新开始</button>
+                    <button class="reset-btn right-btn" onclick="restartGame()">🎮 Restart</button>
                 </div>
-                <button class="close-page-btn" onclick="window.close()">❌ 关闭页面</button>
+                <button class="close-page-btn" onclick="window.close()">❌ Close Window</button>
             </div>
         </div>
 
@@ -657,8 +657,8 @@
             <div class="modal-content" id="modalContent">
                 <h2 id="modalTitle"></h2>
                 <p id="modalMessage"></p>
-                <button class="reset-btn" onclick="closeModal()">关闭</button>
-                <button class="reset-btn" onclick="restartGame(); closeModal();">再玩一次</button>
+                <button class="reset-btn" onclick="closeModal()">Close</button>
+                <button class="reset-btn" onclick="restartGame(); closeModal();">Play Again</button>
             </div>
         </div>
     </div>
@@ -1169,9 +1169,9 @@
         function updateRuleDisplay() {
             const ruleEl = document.getElementById('ruleDisplay');
             const rules = {
-                'odd': '只能走奇数 🔢',
-                'even': '只能走偶数 🔢',
-                'multiple3': '只能走3的倍数 ✖️3'
+                'odd': 'Only move on Odd Number 🔢',
+                'even': 'Only move on Even Number 🔢',
+                'multiple3': 'Only move on Triple Number ✖️3'
             };
             ruleEl.textContent = rules[config.pathRule];
         }
@@ -1191,7 +1191,7 @@
             const elapsed = Math.floor((Date.now() - gameState.startTime) / 1000);
             const minutes = Math.floor(elapsed / 60);
             const seconds = elapsed % 60;
-            const timeStr = `${minutes}分${seconds}秒`;
+            const timeStr = `${minutes} min ${seconds} sec`;
 
             // 显示所有正确路径和玩家路径
             const { rows, cols } = config;
@@ -1214,12 +1214,12 @@
 
             if (gameState.won) {
                 modalContent.className = 'modal-content win';
-                modalTitle.textContent = '🎉 恭喜通关！';
-                modalMessage.textContent = `太棒了！你成功走出迷宫啦！用时：${timeStr}`;
+                modalTitle.textContent = '🎉 Congratulations on on reaching the exit！';
+                modalMessage.textContent = `Fantastic! You have successfully navigated the maze! Time taken：${timeStr}`;
             } else {
                 modalContent.className = 'modal-content lose';
-                modalTitle.textContent = '😢 游戏结束';
-                modalMessage.textContent = `生命值用完了，再试一次吧！用时：${timeStr}。黄色格子是你走过的路径，绿色格子是所有正确的格子。`;
+                modalTitle.textContent = '😢 Game Over';
+                modalMessage.textContent = `Life points are depleted, let's try again! Time elapsed：${timeStr}。The yellow squares represent the path you have taken, and the green squares represent all the correct squares.。`;
             }
 
             modal.classList.add('active');
