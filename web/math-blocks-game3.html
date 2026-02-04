@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Math Block Adventure - Eye Training Math Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Arial Rounded MT Bold', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #ff6b9d;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+            animation: titleBounce 2s ease-in-out infinite;
+        }
+
+        @keyframes titleBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .settings-panel {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-panel h2 {
+            color: #d63031;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .setting-item {
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .setting-item label {
+            font-weight: bold;
+            color: #2d3436;
+            font-size: 1.1em;
+            min-width: 200px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            border: 3px solid #74b9ff;
+            border-radius: 10px;
+            font-size: 1.2em;
+            width: 100px;
+            font-weight: bold;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #a29bfe 0%, #6c5ce7 100%);
+            color: white;
+            font-size: 1.5em;
+            padding: 15px 50px;
+            display: block;
+            margin: 20px auto;
+        }
+
+        .game-area {
+            display: none;
+        }
+
+        .game-area.active {
+            display: block;
+        }
+
+        .info-bar {
+            background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+            padding: 20px;
+            border-radius: 15px;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            font-size: 1.3em;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .icon {
+            font-size: 1.8em;
+        }
+
+        .target-box {
+            background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.5em;
+        }
+
+        .game-board {
+            background: linear-gradient(135deg, #dfe6e9 0%, #b2bec3 100%);
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .block {
+            position: absolute;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            border: 5px solid rgba(255, 255, 255, 0.6);
+            font-weight: bold;
+            min-height: 80px;
+        }
+
+        .block:hover {
+            transform: scale(1.05);
+            z-index: 100;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .btn-control {
+            background: linear-gradient(135deg, #fab1a0 0%, #e17055 100%);
+            color: white;
+        }
+
+        .btn-pause {
+            background: linear-gradient(135deg, #55efc4 0%, #00b894 100%);
+            color: white;
+            font-size: 1.3em;
+        }
+
+        .btn-pause.paused {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
+            color: white;
+        }
+
+        .btn-end {
+            background: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+            color: white;
+        }
+
+        .btn-close {
+            background: linear-gradient(135deg, #636e72 0%, #2d3436 100%);
+            color: white;
+        }
+
+        .game-over {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .game-over.active {
+            display: flex;
+        }
+
+        .game-over-content {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            padding: 50px;
+            border-radius: 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .game-over-content h2 {
+            color: #d63031;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .game-over-content p {
+            font-size: 1.8em;
+            margin: 15px 0;
+            color: #2d3436;
+            font-weight: bold;
+        }
+
+        .celebration {
+            position: fixed;
+            pointer-events: none;
+            z-index: 999;
+            font-size: 5em;
+            animation: celebrate 1s ease-out forwards;
+        }
+
+        @keyframes celebrate {
+            0% {
+                transform: scale(0) rotate(0deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.5) rotate(180deg);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(0) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .star-burst {
+            position: fixed;
+            pointer-events: none;
+            z-index: 998;
+            font-size: 2em;
+            animation: starBurst 1s ease-out forwards;
+        }
+
+        @keyframes starBurst {
+            0% {
+                transform: translate(0, 0) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--tx), var(--ty)) scale(1);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            .info-item {
+                font-size: 1em;
+            }
+            .btn {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Math Block Adventure</h1>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <h2>🎮 Game Settings</h2>
+            <div class="setting-item">
+                <label>🎲 Number of Falling Blocks (1-10):</label>
+                <input type="number" id="blockCount" min="1" max="10" value="5">
+            </div>
+            <div class="setting-item">
+                <label>Board Height (3-15 seconds):</label>
+                <input type="number" id="boardHeight" min="3" max="15" value="3">
+            </div>
+            <div class="setting-item">
+                <label>🎯 Target Last Digit (0-9):</label>
+                <input type="number" id="targetDigit" min="0" max="9" value="5">
+            </div>
+            <button class="btn btn-start" onclick="startGame()">🚀 Start Game</button>
+        </div>
+
+        <!-- Game Area -->
+        <div class="game-area" id="gameArea">
+            <div class="info-bar">
+                <div class="info-item">
+                    <span class="icon">⭐</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon">🏆</span>
+                    <span id="trophies">0</span>
+                </div>
+                <div class="info-item target-box">
+                    <span>Find Last Digit:</span>
+                    <span id="displayTarget">5</span>
+                </div>
+                <div class="info-item">
+                    <span class="icon">👀</span>
+                    <span>Eye Break</span>
+                    <span id="timer">5:00</span>
+                </div>
+            </div>
+
+            <div class="game-board" id="gameBoard"></div>
+
+            <div class="controls">
+                <button class="btn btn-control" onclick="changeFontSize(-2)">🔽 Font Smaller</button>
+                <button class="btn btn-control" onclick="changeFontSize(2)">🔼 Font Bigger</button>
+                <button class="btn btn-pause" id="pauseBtn" onclick="togglePause()">⏸️ Pause</button>
+                <button class="btn btn-reset" onclick="resetSettings()">⚙️ Reset Settings</button>
+                <button class="btn btn-reset" onclick="restartGame()">🔄 Restart</button>
+            </div>
+            <div class="controls">
+                <button class="btn btn-end" onclick="endGame()">⏹️ End Game</button>
+            </div>
+            <div class="controls">
+                <button class="btn btn-close" onclick="window.close()">❌ Close Page</button>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div class="game-over" id="gameOver">
+            <div class="game-over-content">
+                <h2 id="gameOverTitle">🎉 Amazing!</h2>
+                <p id="gameOverMessage"></p>
+                <p>Score: <span id="finalScore">0</span></p>
+                <p>Trophies Earned: <span id="finalTrophies">0</span> 🏆</p>
+                <button class="btn btn-start" onclick="closeGameOver()">Play Again 🎮</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gameState = {
+            score: 0,
+            trophies: 0,
+            blocks: [],
+            gameInterval: null,
+            timerInterval: null,
+            timeLeft: 300, // 10 minutes
+            blockCount: 3,
+            boardHeight: 3,
+            targetDigit: 5,
+            baseFontSize: 32,
+            manualFontAdjust: 0,
+            isRunning: false,
+            isPaused: false,
+            occupiedColumns: [], // Track occupied columns
+            lastSpawnTime: 0
+        };
+
+        const eyeFriendlyColors = [
+            '#b8e6b8', '#a8d8ea', '#ffccb3', '#f9e4b7', '#e4c5af',
+            '#d4a5a5', '#c9b6e4', '#b5ddd1', '#f4d9c6', '#d5e8d4',
+            '#ffe4e1', '#e6e6fa', '#f0e68c', '#dda0dd', '#f5deb3'
+        ];
+
+        const encouragements = [
+            "You're a math genius! 🌟",
+            "Amazing! Keep it up! 💪",
+            "Great eye and calculation skills! 👀",
+            "Amazing! Your brain is so smart! 🧠",
+            "Wow! You're awesome! Keep going! 🎯",
+            "Math superstar, incredible! 🏆",
+            "Your speed and accuracy are excellent! ⚡",
+            "Keep it up, you're the best! 🌈"
+        ];
+
+        function startGame() {
+            gameState.blockCount = parseInt(document.getElementById('blockCount').value);
+            gameState.boardHeight = parseInt(document.getElementById('boardHeight').value);
+            gameState.targetDigit = parseInt(document.getElementById('targetDigit').value);
+            gameState.score = 0;
+            gameState.trophies = 0;
+            gameState.timeLeft = 300;
+            gameState.blocks = [];
+            gameState.isRunning = true;
+
+            document.getElementById('settingsPanel').style.display = 'none';
+            document.getElementById('gameArea').classList.add('active');
+            document.getElementById('displayTarget').textContent = gameState.targetDigit;
+
+            updateDisplay();
+            initGameBoard();
+            startGameLoop();
+            startTimer();
+        }
+
+        function initGameBoard() {
+            const board = document.getElementById('gameBoard');
+            const cellHeight = 80; // 增大单元格高度
+            const boardHeightPx = gameState.boardHeight * cellHeight;
+            board.style.height = boardHeightPx + 'px';
+            board.innerHTML = '';
+            gameState.occupiedColumns = [];
+        }
+
+        function calculateFontSize() {
+            const blockWidthPercent = (100 / gameState.blockCount);
+            let baseFontSize = Math.max(24, Math.min(48, blockWidthPercent * 0.4));
+            return baseFontSize + gameState.manualFontAdjust;
+        }
+
+        function generateEquation() {
+            const operations = ['+', '-', '×', '÷'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            let num1, num2, result;
+            
+            // 增加匹配目标的概率：30%-50%之间
+            const shouldMatch = Math.random() < 0.4; // 40% probability to match target
+
+            if (shouldMatch) {
+                // 直接生成符合目标个位数的算式
+                const targetLast = gameState.targetDigit;
+                
+                switch(operation) {
+                    case '+':
+                        num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+                        // 计算num2使得结果个位数为目标值
+                        const desiredSum = targetLast + (Math.floor(Math.random() * 15) + 1) * 10; // 目标结果
+                        num2 = desiredSum - num1;
+                        if (num2 < 10 || num2 > 99) {
+                            // 如果num2不在范围内，重新调整
+                            num2 = Math.floor(Math.random() * 90) + 10;
+                            num1 = (targetLast >= num2 % 10) ? 
+                                   (targetLast - num2 % 10) + Math.floor(Math.random() * 9) * 10 + 10 :
+                                   (10 + targetLast - num2 % 10) + Math.floor(Math.random() * 8) * 10 + 10;
+                        }
+                        result = num1 + num2;
+                        break;
+                        
+                    case '-':
+                        num1 = Math.floor(Math.random() * 90) + 10;
+                        // 计算num2使得结果个位数为目标值
+                        const lastDigitNum1 = num1 % 10;
+                        if (lastDigitNum1 >= targetLast) {
+                            num2 = (lastDigitNum1 - targetLast) + Math.floor(Math.random() * 5) * 10;
+                        } else {
+                            num2 = (10 + lastDigitNum1 - targetLast) + Math.floor(Math.random() * 5) * 10;
+                        }
+                        if (num2 >= num1) num2 = num1 - 10 - targetLast;
+                        if (num2 < 10) num2 = 10 + (num1 % 10 - targetLast);
+                        result = num1 - num2;
+                        break;
+                        
+                    case '×':
+                        num1 = Math.floor(Math.random() * 9) + 10; // 10-18
+                        // 找一个乘数使得结果个位数为目标值
+                        const possibleNum2 = [];
+                        for (let i = 2; i <= 9; i++) {
+                            if ((num1 * i) % 10 === targetLast) {
+                                possibleNum2.push(i);
+                            }
+                        }
+                        if (possibleNum2.length > 0) {
+                            num2 = possibleNum2[Math.floor(Math.random() * possibleNum2.length)] + Math.floor(Math.random() * 2) * 10;
+                        } else {
+                            num2 = Math.floor(Math.random() * 9) + 10;
+                        }
+                        result = num1 * num2;
+                        break;
+                        
+                    case '÷':
+                        num2 = Math.floor(Math.random() * 9) + 2; // 2-10
+                        result = Math.floor(Math.random() * 15) + 2; // 2-16
+                        num1 = num2 * result;
+                        // 除法较难调整个位数，如果不匹配就随机
+                        break;
+                }
+            } else {
+                // 正常生成随机算式
+                do {
+                    num1 = Math.floor(Math.random() * 90) + 10; // 10-99
+                    num2 = Math.floor(Math.random() * 90) + 10;
+
+                    switch(operation) {
+                        case '+':
+                            result = num1 + num2;
+                            break;
+                        case '-':
+                            if (num1 < num2) [num1, num2] = [num2, num1];
+                            result = num1 - num2;
+                            break;
+                        case '×':
+                            num1 = Math.floor(Math.random() * 9) + 10; // 10-18
+                            num2 = Math.floor(Math.random() * 9) + 10;
+                            result = num1 * num2;
+                            break;
+                        case '÷':
+                            num2 = Math.floor(Math.random() * 9) + 2; // 2-10
+                            result = Math.floor(Math.random() * 15) + 2; // 2-16
+                            num1 = num2 * result;
+                            break;
+                    }
+                } while (result < 0);
+            }
+
+            return {
+                equation: `${num1} ${operation} ${num2}`,
+                result: result,
+                isTarget: (result % 10) === gameState.targetDigit
+            };
+        }
+
+        function createBlock() {
+            const board = document.getElementById('gameBoard');
+            const boardWidth = board.offsetWidth;
+            
+            // 计算每列的宽度（12列网格系统）
+            const totalColumns = 12;
+            const columnsPerBlock = Math.max(1, Math.floor(totalColumns / gameState.blockCount));
+            
+            // 找到未被占用的列
+            let availableColumns = [];
+            for (let i = 0; i < totalColumns; i += columnsPerBlock) {
+                if (!gameState.occupiedColumns.includes(i)) {
+                    availableColumns.push(i);
+                }
+            }
+            
+            // 如果所有列都被占用，清空占用记录
+            if (availableColumns.length === 0) {
+                gameState.occupiedColumns = [];
+                for (let i = 0; i < totalColumns; i += columnsPerBlock) {
+                    availableColumns.push(i);
+                }
+            }
+            
+            // 随机选择一个可用列
+            const columnIndex = availableColumns[Math.floor(Math.random() * availableColumns.length)];
+            gameState.occupiedColumns.push(columnIndex);
+            
+            const block = document.createElement('div');
+            block.className = 'block';
+            
+            const eq = generateEquation();
+            block.textContent = eq.equation;
+            block.dataset.result = eq.result;
+            block.dataset.isTarget = eq.isTarget;
+            block.dataset.column = columnIndex;
+            
+            const fontSize = calculateFontSize();
+            const blockWidthPercent = (100 / totalColumns) * columnsPerBlock - 1;
+            const leftPosition = (columnIndex / totalColumns) * 100;
+            
+            block.style.fontSize = fontSize + 'px';
+            block.style.width = blockWidthPercent + '%';
+            block.style.height = '80px';
+            block.style.left = leftPosition + '%';
+            block.style.top = '-100px';
+            block.style.backgroundColor = eyeFriendlyColors[Math.floor(Math.random() * eyeFriendlyColors.length)];
+            
+            block.onclick = function() {
+                handleBlockClick(block);
+            };
+            
+            board.appendChild(block);
+            gameState.blocks.push({
+                element: block,
+                y: -100,
+                speed: 0.5, // 减慢速度
+                column: columnIndex
+            });
+        }
+
+        function handleBlockClick(block) {
+            const isTarget = block.dataset.isTarget === 'true';
+            
+            if (isTarget) {
+                gameState.score++;
+                showStars();
+                
+                const oldTrophies = gameState.trophies;
+                gameState.trophies = Math.floor(gameState.score / 10);
+                
+                if (gameState.trophies > oldTrophies) {
+                    showTrophy();
+                }
+            } else {
+                gameState.score--;
+                const oldTrophies = gameState.trophies;
+                gameState.trophies = Math.max(0, Math.floor(gameState.score / 10));
+                
+                showError();
+            }
+            
+            // 释放该列
+            const column = parseInt(block.dataset.column);
+            const index = gameState.occupiedColumns.indexOf(column);
+            if (index > -1) {
+                gameState.occupiedColumns.splice(index, 1);
+            }
+            
+            block.remove();
+            const blockIndex = gameState.blocks.findIndex(b => b.element === block);
+            if (blockIndex > -1) {
+                gameState.blocks.splice(blockIndex, 1);
+            }
+            
+            updateDisplay();
+        }
+
+        function startGameLoop() {
+            gameState.lastSpawnTime = Date.now();
+            const spawnInterval = 1500; // 每1.5秒尝试生成新方块
+
+            gameState.gameInterval = setInterval(() => {
+                if (!gameState.isRunning || gameState.isPaused) return;
+
+                const now = Date.now();
+                
+                // 持续生成方块，保持游戏区域有足够的方块
+                if (now - gameState.lastSpawnTime > spawnInterval) {
+                    const currentBlocks = gameState.blocks.length;
+                    // 如果当前方块少于设定数量，生成新方块
+                    if (currentBlocks < gameState.blockCount) {
+                        createBlock();
+                    } else {
+                        // 即使达到数量，也以较低频率继续生成
+                        if (Math.random() < 0.3) {
+                            createBlock();
+                        }
+                    }
+                    gameState.lastSpawnTime = now;
+                }
+
+                // 移动方块
+                const cellHeight = 80;
+                const maxY = gameState.boardHeight * cellHeight;
+                
+                for (let i = gameState.blocks.length - 1; i >= 0; i--) {
+                    const block = gameState.blocks[i];
+                    block.y += block.speed;
+                    block.element.style.top = block.y + 'px';
+                    
+                    if (block.y > maxY) {
+                        // 释放该列
+                        const column = parseInt(block.element.dataset.column);
+                        const index = gameState.occupiedColumns.indexOf(column);
+                        if (index > -1) {
+                            gameState.occupiedColumns.splice(index, 1);
+                        }
+                        
+                        block.element.remove();
+                        gameState.blocks.splice(i, 1);
+                    }
+                }
+            }, 16); // ~60fps
+        }
+
+        function startTimer() {
+            gameState.timerInterval = setInterval(() => {
+                if (gameState.isPaused) return;
+                
+                gameState.timeLeft--;
+                
+                const minutes = Math.floor(gameState.timeLeft / 60);
+                const seconds = gameState.timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (gameState.timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function updateDisplay() {
+            document.getElementById('score').textContent = gameState.score;
+            document.getElementById('trophies').textContent = gameState.trophies;
+        }
+
+        function showStars() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const star = document.createElement('div');
+                    star.className = 'star-burst';
+                    star.textContent = '⭐';
+                    star.style.left = Math.random() * 100 + '%';
+                    star.style.top = Math.random() * 100 + '%';
+                    star.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+                    star.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+                    document.body.appendChild(star);
+                    setTimeout(() => star.remove(), 1000);
+                }, i * 30);
+            }
+        }
+
+        function showTrophy() {
+            const trophy = document.createElement('div');
+            trophy.className = 'celebration';
+            trophy.textContent = '🏆';
+            trophy.style.left = '50%';
+            trophy.style.top = '50%';
+            trophy.style.transform = 'translate(-50%, -50%)';
+            document.body.appendChild(trophy);
+            setTimeout(() => trophy.remove(), 1000);
+        }
+
+        function showError() {
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    const error = document.createElement('div');
+                    error.className = 'star-burst';
+                    error.textContent = ['💥', '❌', '😵'][Math.floor(Math.random() * 3)];
+                    error.style.left = Math.random() * 100 + '%';
+                    error.style.top = Math.random() * 100 + '%';
+                    error.style.setProperty('--tx', (Math.random() - 0.5) * 150 + 'px');
+                    error.style.setProperty('--ty', (Math.random() - 0.5) * 150 + 'px');
+                    document.body.appendChild(error);
+                    setTimeout(() => error.remove(), 1000);
+                }, i * 40);
+            }
+        }
+
+        function showGameOverCelebration() {
+            const emojis = ['🎉', '🎊', '✨', '🌟', '💫', '🎈', '🎁', '🏆', '⭐', '🌈'];
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'celebration';
+                    emoji.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                    emoji.style.left = Math.random() * 100 + '%';
+                    emoji.style.top = Math.random() * 100 + '%';
+                    document.body.appendChild(emoji);
+                    setTimeout(() => emoji.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
+        function endGame() {
+            gameState.isRunning = false;
+            clearInterval(gameState.gameInterval);
+            clearInterval(gameState.timerInterval);
+            
+            document.getElementById('finalScore').textContent = gameState.score;
+            document.getElementById('finalTrophies').textContent = gameState.trophies;
+            
+            const encouragement = encouragements[Math.floor(Math.random() * encouragements.length)];
+            document.getElementById('gameOverMessage').textContent = encouragement;
+            
+            document.getElementById('gameOver').classList.add('active');
+            showGameOverCelebration();
+        }
+
+        function closeGameOver() {
+            document.getElementById('gameOver').classList.remove('active');
+            resetSettings();
+        }
+
+        function resetSettings() {
+            gameState.isRunning = false;
+            gameState.isPaused = false;
+            clearInterval(gameState.gameInterval);
+            clearInterval(gameState.timerInterval);
+            
+            document.getElementById('settingsPanel').style.display = 'block';
+            document.getElementById('gameArea').classList.remove('active');
+            document.getElementById('gameBoard').innerHTML = '';
+            gameState.blocks = [];
+            gameState.occupiedColumns = [];
+            gameState.manualFontAdjust = 0;
+            
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (pauseBtn) {
+                pauseBtn.textContent = '⏸️ Pause';
+                pauseBtn.classList.remove('paused');
+            }
+        }
+
+        function restartGame() {
+            gameState.isPaused = false;
+            clearInterval(gameState.gameInterval);
+            clearInterval(gameState.timerInterval);
+            document.getElementById('gameBoard').innerHTML = '';
+            gameState.blocks = [];
+            gameState.occupiedColumns = [];
+            
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (pauseBtn) {
+                pauseBtn.textContent = '⏸️ Pause';
+                pauseBtn.classList.remove('paused');
+            }
+            
+            startGame();
+        }
+
+        function changeFontSize(delta) {
+            gameState.manualFontAdjust += delta;
+            const newSize = calculateFontSize();
+            
+            gameState.blocks.forEach(block => {
+                block.element.style.fontSize = newSize + 'px';
+            });
+        }
+
+        function togglePause() {
+            gameState.isPaused = !gameState.isPaused;
+            const pauseBtn = document.getElementById('pauseBtn');
+            
+            if (gameState.isPaused) {
+                pauseBtn.textContent = '▶️ Resume';
+                pauseBtn.classList.add('paused');
+            } else {
+                pauseBtn.textContent = '⏸️ Pause';
+                pauseBtn.classList.remove('paused');
+            }
+        }
+    </script>
+</body>
+</html>

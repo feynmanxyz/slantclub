@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Hunt Game - Math Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .settings-panel {
+            background: #f8f9ff;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .setting-row {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .setting-row label {
+            font-weight: bold;
+            color: #333;
+            min-width: 180px;
+        }
+
+        .setting-row input, .setting-row select {
+            padding: 8px 12px;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .start-btn {
+            font-size: 24px;
+            padding: 15px 50px;
+            margin-top: 10px;
+        }
+
+        .game-area {
+            display: none;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 5px 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+            margin: 5px;
+        }
+
+        .grid-container {
+            display: grid;
+            gap: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .grid-cell {
+            background: #e8e8e8;
+            border: 3px solid #ccc;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+            color: #333;
+            user-select: none;
+            width: 100%;
+            aspect-ratio: 1;
+        }
+
+        .grid-cell:hover {
+            background: #d0d0d0;
+            transform: scale(1.05);
+        }
+
+        .grid-cell.correct {
+            background: #4caf50;
+            color: white;
+            pointer-events: none;
+        }
+
+        .grid-cell.wrong {
+            animation: shake 0.5s;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        .close-btn {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .animation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .star, .trophy-icon, .error-icon, .celebration {
+            position: absolute;
+            font-size: 40px;
+            animation: float 1s ease-out forwards;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-200px) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .result-panel {
+            display: none;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+        }
+
+        .result-panel h2 {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .result-panel p {
+            font-size: 1.5em;
+            margin: 10px 0;
+        }
+
+        .encouragement {
+            font-size: 2em;
+            margin-top: 20px;
+            font-weight: bold;
+            color: #fff44f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Math Adventure - Number Hunt Game</h1>
+        
+        <!-- Settings Panel -->
+        <div class="settings-panel" id="settingsPanel">
+            <div class="setting-row">
+                <label>⏱️ Refresh Time (seconds):</label>
+                <input type="number" id="refreshTime" min="5" max="30" value="15">
+            </div>
+            <div class="setting-row">
+                <label>📊 Grid Columns:</label>
+                <input type="number" id="gridCols" min="3" max="10" value="5">
+            </div>
+            <div class="setting-row">
+                <label>📊 Grid Rows:</label>
+                <input type="number" id="gridRows" min="3" max="15" value="5">
+            </div>
+            <div class="setting-row">
+                <label>🎯 Target Last Digit:</label>
+                <select id="targetDigit">
+                    <option value="0">0</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5" selected>5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                </select>
+            </div>
+            <div style="text-align: center;">
+                <button class="btn start-btn" onclick="startGame()">🚀 Start Game</button>
+            </div>
+        </div>
+
+        <!-- Game Area -->
+        <div class="game-area" id="gameArea">
+            <div class="info-bar">
+                <div class="info-item">
+                    <span>⭐</span>
+                    <span id="scoreDisplay">0</span>
+                </div>
+                <div class="info-item">
+                    <span>🏆</span>
+                    <span id="trophyDisplay">0</span>
+                </div>
+                <div class="info-item">
+                    <span>🎯 Find Last Digit:</span>
+                    <span id="targetDisplay">5</span>
+                </div>
+                <div class="info-item">
+                    <span>Eye Rest ⏰</span>
+                    <span id="timerDisplay">10:00</span>
+                </div>
+            </div>
+
+            <div class="grid-container" id="gridContainer"></div>
+
+            <div class="controls">
+                <button class="btn" onclick="decreaseFontSize()">Font Smaller</button>
+                <button class="btn" onclick="increaseFontSize()">Font Larger</button>
+                <button class="btn" onclick="resetSettings()">Reset Settings</button>
+                <button class="btn" onclick="restartGame()">Restart Game</button>
+            </div>
+
+            <button class="btn close-btn" onclick="endGame()" style="margin-bottom: 10px;">End Game</button>
+            <button class="btn close-btn" onclick="closePage()">Close Page</button>
+        </div>
+
+        <!-- Result Panel -->
+        <div class="result-panel" id="resultPanel">
+            <h2>🎉 Game Over!</h2>
+            <p>⭐ Total Score: <span id="finalScore">0</span></p>
+            <p>🏆 Trophies Earned: <span id="finalTrophies">0</span></p>
+            <div class="encouragement" id="encouragement"></div>
+            <button class="btn" onclick="resetSettings()" style="margin-top: 30px; font-size: 20px;">Back to Settings</button>
+        </div>
+
+        <div class="animation-overlay" id="animationOverlay"></div>
+    </div>
+
+    <script>
+        let score = 0;
+        let trophies = 0;
+        let targetDigit = 5;
+        let gridCols = 5;
+        let gridRows = 5;
+        let refreshTime = 15;
+        let timeLeft = 300; // 10分钟
+        let timerInterval;
+        let refreshInterval;
+        let gridData = [];
+        let correctCells = [];
+        let foundCells = 0;
+        let baseFontSize = 20; // 基础字体大小
+        let fontSize = 20; // 当前字体大小
+        let fontSizeManuallyAdjusted = false; // 是否手动调整过字体大小
+        let manualFontAdjustment = 0; // 手动调整的偏移量
+
+        function generateExpression() {
+            const operations = ['+', '-', '×', '÷'];
+            const op = operations[Math.floor(Math.random() * operations.length)];
+            let num1, num2, result;
+
+            switch(op) {
+                case '+':
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * 90) + 10;
+                    result = num1 + num2;
+                    break;
+                case '-':
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * (num1 - 10)) + 10;
+                    result = num1 - num2;
+                    break;
+                case '×':
+                    num1 = Math.floor(Math.random() * 90) + 10;
+                    num2 = Math.floor(Math.random() * 9) + 2;
+                    result = num1 * num2;
+                    break;
+                case '÷':
+                    num2 = Math.floor(Math.random() * 9) + 2;
+                    const quotient = Math.floor(Math.random() * 50) + 10;
+                    num1 = num2 * quotient;
+                    result = quotient;
+                    break;
+            }
+
+            return {
+                expression: `${num1} ${op} ${num2}`,
+                result: result,
+                lastDigit: result % 10
+            };
+        }
+
+        function generateGrid() {
+            gridData = [];
+            correctCells = [];
+            foundCells = 0;
+
+            const totalCells = gridCols * gridRows;
+            const targetCount = Math.floor(gridCols * 1.2) + Math.floor(Math.random() * 3) + 1;
+
+            // 生成目标数字的格子
+            for (let i = 0; i < targetCount; i++) {
+                correctCells.push(i);
+            }
+
+            // 生成所有格子
+            for (let i = 0; i < totalCells; i++) {
+                let expr;
+                if (i < targetCount) {
+                    // 确保生成个位数为目标数字的算式
+                    do {
+                        expr = generateExpression();
+                    } while (expr.lastDigit !== targetDigit);
+                } else {
+                    // 生成其他算式
+                    do {
+                        expr = generateExpression();
+                    } while (expr.lastDigit === targetDigit);
+                }
+                gridData.push(expr);
+            }
+
+            // 打乱数组
+            for (let i = gridData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [gridData[i], gridData[j]] = [gridData[j], gridData[i]];
+                // 同时更新correctCells
+                if (correctCells.includes(i)) {
+                    correctCells[correctCells.indexOf(i)] = j;
+                } else if (correctCells.includes(j)) {
+                    correctCells[correctCells.indexOf(j)] = i;
+                }
+            }
+
+            renderGrid();
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${gridCols}, 1fr)`;
+            
+            // 根据列数动态计算基础字体大小，增大默认值
+            baseFontSize = Math.max(16, Math.min(40, Math.floor(120 / gridCols)));
+            
+            // 如果手动调整过字体，应用调整偏移量
+            if (fontSizeManuallyAdjusted) {
+                fontSize = baseFontSize + manualFontAdjustment;
+            } else {
+                fontSize = baseFontSize;
+            }
+
+            gridData.forEach((data, index) => {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.textContent = data.expression;
+                cell.style.fontSize = `${fontSize}px`;
+                cell.onclick = () => handleCellClick(index, cell);
+                container.appendChild(cell);
+            });
+        }
+
+        function handleCellClick(index, cell) {
+            if (cell.classList.contains('correct')) return;
+
+            if (gridData[index].lastDigit === targetDigit) {
+                // 正确
+                cell.classList.add('correct');
+                score++;
+                foundCells++;
+                updateScore();
+                showAnimation('star');
+
+                // 检查是否得到新奖杯
+                if (score % 10 === 0) {
+                    trophies++;
+                    updateTrophies();
+                    showAnimation('trophy');
+                }
+
+                // 检查是否找完所有正确格子
+                if (foundCells >= correctCells.length) {
+                    setTimeout(() => {
+                        generateGrid();
+                    }, 500);
+                }
+            } else {
+                // 错误
+                score--;
+                updateScore();
+                cell.classList.add('wrong');
+                setTimeout(() => cell.classList.remove('wrong'), 500);
+                showAnimation('error');
+
+                // 处理奖杯减少
+                if (score >= 0 && score % 10 === 9 && trophies > 0) {
+                    trophies--;
+                    updateTrophies();
+                }
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('scoreDisplay').textContent = score;
+        }
+
+        function updateTrophies() {
+            document.getElementById('trophyDisplay').textContent = trophies;
+        }
+
+        function showAnimation(type) {
+            const overlay = document.getElementById('animationOverlay');
+            const count = type === 'trophy' ? 20 : 10;
+
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const element = document.createElement('div');
+                    element.className = type === 'star' ? 'star' : 
+                                      type === 'trophy' ? 'trophy-icon' : 'error-icon';
+                    element.textContent = type === 'star' ? '⭐' : 
+                                        type === 'trophy' ? '🏆' : '💥';
+                    element.style.left = Math.random() * 100 + '%';
+                    element.style.top = Math.random() * 100 + '%';
+                    overlay.appendChild(element);
+
+                    setTimeout(() => element.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
+        function showCelebration() {
+            const overlay = document.getElementById('animationOverlay');
+            const icons = ['🎉', '🎊', '🌟', '✨', '🎈', '🎁', '🏆'];
+
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const element = document.createElement('div');
+                    element.className = 'celebration';
+                    element.textContent = icons[Math.floor(Math.random() * icons.length)];
+                    element.style.left = Math.random() * 100 + '%';
+                    element.style.top = Math.random() * 100 + '%';
+                    overlay.appendChild(element);
+
+                    setTimeout(() => element.remove(), 1000);
+                }, i * 30);
+            }
+        }
+
+        function updateTimer() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timerDisplay').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            if (timeLeft <= 0) {
+                endGame();
+            } else {
+                timeLeft--;
+            }
+        }
+
+        function endGame() {
+            clearInterval(timerInterval);
+            clearInterval(refreshInterval);
+
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('resultPanel').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+            document.getElementById('finalTrophies').textContent = trophies;
+
+            // Encouragement messages
+            let encouragement = '';
+            if (score >= 100) {
+                encouragement = 'Amazing! You are a math genius! 🌟🌟🌟';
+            } else if (score >= 50) {
+                encouragement = 'Excellent work! Keep it up! 💪✨';
+            } else if (score >= 20) {
+                encouragement = 'Great job! Keep going! 🎈🎉';
+            } else {
+                encouragement = 'Good try! You will do better next time! 🌈😊';
+            }
+            document.getElementById('encouragement').textContent = encouragement;
+
+            showCelebration();
+        }
+
+        function startGame() {
+            // 获取设置
+            refreshTime = parseInt(document.getElementById('refreshTime').value);
+            gridCols = parseInt(document.getElementById('gridCols').value);
+            gridRows = parseInt(document.getElementById('gridRows').value);
+            targetDigit = parseInt(document.getElementById('targetDigit').value);
+
+            // 重置游戏状态
+            score = 0;
+            trophies = 0;
+            timeLeft = 300;
+            foundCells = 0;
+
+            // 更新显示
+            document.getElementById('targetDisplay').textContent = targetDigit;
+            updateScore();
+            updateTrophies();
+
+            // 显示游戏区域
+            document.getElementById('settingsPanel').style.display = 'none';
+            document.getElementById('resultPanel').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'block';
+
+            // 生成初始网格
+            generateGrid();
+
+            // 启动计时器
+            timerInterval = setInterval(updateTimer, 1000);
+            refreshInterval = setInterval(() => {
+                if (foundCells < correctCells.length) {
+                    generateGrid();
+                }
+            }, refreshTime * 1000);
+        }
+
+        function increaseFontSize() {
+            fontSizeManuallyAdjusted = true;
+            manualFontAdjustment += 2;
+            fontSize += 2;
+            document.querySelectorAll('.grid-cell').forEach(cell => {
+                cell.style.fontSize = `${fontSize}px`;
+            });
+        }
+
+        function decreaseFontSize() {
+            if (fontSize > 12) {
+                fontSizeManuallyAdjusted = true;
+                manualFontAdjustment -= 2;
+                fontSize -= 2;
+                document.querySelectorAll('.grid-cell').forEach(cell => {
+                    cell.style.fontSize = `${fontSize}px`;
+                });
+            }
+        }
+
+        function resetSettings() {
+            clearInterval(timerInterval);
+            clearInterval(refreshInterval);
+            fontSizeManuallyAdjusted = false;
+            manualFontAdjustment = 0;
+            document.getElementById('settingsPanel').style.display = 'block';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('resultPanel').style.display = 'none';
+        }
+
+        function restartGame() {
+            clearInterval(timerInterval);
+            clearInterval(refreshInterval);
+            startGame();
+        }
+
+        function closePage() {
+            if (confirm('Are you sure you want to close the page?')) {
+                window.close();
+            }
+        }
+    </script>
+</body>
+</html>
