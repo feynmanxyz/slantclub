@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Light Out Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .settings-panel {
+            background: #f0f4ff;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .settings-panel h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+        }
+
+        .setting-row label {
+            font-size: 1.1em;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .setting-row select {
+            padding: 8px 15px;
+            font-size: 1em;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            min-width: 100px;
+        }
+
+        .timer-display {
+            text-align: center;
+            font-size: 1.5em;
+            color: #764ba2;
+            font-weight: bold;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #fff3cd;
+            border-radius: 10px;
+        }
+
+        .game-board {
+            display: inline-block;
+            background: linear-gradient(to bottom, #1a1a2e 0%, #0f3460 50%, #1a1a2e 100%);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            margin: 20px auto;
+            position: relative;
+        }
+
+        .game-container {
+            text-align: center;
+        }
+
+        .grid {
+            display: grid;
+            gap: 8px;
+            margin: 0 auto;
+        }
+
+        .window {
+            aspect-ratio: 1;
+            border: 3px solid #444;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+        }
+
+        .window.on {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .window.off {
+            background: #2a2a3e;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .window:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+
+        .window.flash {
+            animation: flash 0.3s ease;
+        }
+
+        @keyframes flash {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); opacity: 0.8; }
+        }
+
+        .star {
+            position: fixed;
+            font-size: 2em;
+            pointer-events: none;
+            animation: starfall 1s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes starfall {
+            0% {
+                transform: translateY(0) scale(1) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100px) scale(0.5) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            margin: 5px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+        }
+
+        .btn-close {
+            background: linear-gradient(135deg, #fc6c85 0%, #f54291 100%);
+            color: white;
+            margin-top: 15px;
+        }
+
+        .btn-close:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 66, 145, 0.6);
+        }
+
+        .victory-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .victory-content {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+            animation: victoryPop 0.5s ease;
+        }
+
+        @keyframes victoryPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .victory-content h2 {
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .victory-content .trophy {
+            font-size: 5em;
+            animation: bounce 0.5s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-20px); }
+        }
+
+        .rest-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .rest-content {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 50px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .rest-content h2 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .rest-content p {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .moves-counter {
+            text-align: center;
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌙 Lights Out Challenge 🌙</h1>
+        
+        <div style="text-align: center; background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+            <p style="font-size: 1.2em; color: #333; margin-bottom: 8px;">
+                <strong>It's getting dark! Please help the little animal friends turn off all the lights.</strong>
+            </p>
+            <p style="font-size: 1em; color: #666; margin-bottom: 5px;">
+                💡 Game Rules: Click a window to change its light status; adjacent windows will also change.
+            </p>
+        </div>
+        
+        <div id="settingsPanel" class="settings-panel">
+            <h2>🎮 Game Settings</h2>
+            <div class="setting-row">
+                <label>Horizontal Count:</label>
+                <select id="colsSelect">
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <label>Vertical Count:</label>
+                <select id="rowsSelect">
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <label>Initial Lights On:</label>
+                <select id="lightsSelect">
+                    <!-- 动态生成 -->
+                </select>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn-primary" onclick="startGame()">🎯 Start Game</button>
+            </div>
+        </div>
+
+        <div id="gamePanel" class="hidden">
+            <div class="timer-display">
+                ⏰ Eye Care Rest: <span id="timer">15:00</span>
+            </div>
+            <div class="moves-counter">
+                Steps: <span id="moves">0</span>
+            </div>
+            
+            <div class="game-container">
+                <div class="game-board">
+                    <div id="grid" class="grid"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-secondary" onclick="showSettings()">🔧 Settings</button>
+                <button class="btn-primary" onclick="restartGame()">🔄 Restart</button>
+            </div>
+            
+            <div class="controls">
+                <button class="btn-close" onclick="closePage()">❌ Close Page</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="victoryOverlay" class="victory-overlay">
+        <div class="victory-content">
+            <div class="trophy">🏆</div>
+            <h2>Congratulations!</h2>
+            <p style="font-size: 1.5em; color: #333;">All lights are off!</p>
+            <p style="font-size: 1.3em; color: #666;">Time Used: <span id="finalTime"></span></p>
+            <p style="font-size: 1.3em; color: #666;">Steps: <span id="finalMoves"></span></p>
+            <button class="btn-primary" onclick="closeVictory()">Continue</button>
+        </div>
+    </div>
+
+    <div id="restOverlay" class="rest-overlay">
+        <div class="rest-content">
+            <h2>👀 Eye Care Rest Time!</h2>
+            <p>You've been playing for 15 minutes!</p>
+            <p>💪 You're doing great! Take a rest for your eyes~ </p>
+            <p>🌟 Stand up, walk around, and look at distant objects to relax your eyes!</p>
+            <button class="btn-primary" onclick="continueGame()">Continue Game</button>
+        </div>
+    </div>
+
+    <script>
+        let rows = 4, cols = 4;
+        let totalLights = rows * cols;
+        let grid = [];
+        let timerSeconds = 900; // 15分钟
+        let timerInterval = null;
+        let gameStartTime = null;
+        let isPaused = false;
+        let moves = 0;
+        
+        const animals = ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐵', '🐔', '🐧', '🐦', '🦆', '🦉'];
+
+        function updateLightsSelect() {
+            const lightsSelect = document.getElementById('lightsSelect');
+            lightsSelect.innerHTML = '';
+            const maxLights = parseInt(document.getElementById('colsSelect').value) * 
+                             parseInt(document.getElementById('rowsSelect').value);
+            
+            for (let i = 1; i <= maxLights; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = i;
+                if (i === maxLights) option.selected = true;
+                lightsSelect.appendChild(option);
+            }
+        }
+
+        document.getElementById('colsSelect').addEventListener('change', updateLightsSelect);
+        document.getElementById('rowsSelect').addEventListener('change', updateLightsSelect);
+
+        updateLightsSelect();
+
+        function startGame() {
+            rows = parseInt(document.getElementById('rowsSelect').value);
+            cols = parseInt(document.getElementById('colsSelect').value);
+            totalLights = parseInt(document.getElementById('lightsSelect').value);
+            
+            document.getElementById('settingsPanel').classList.add('hidden');
+            document.getElementById('gamePanel').classList.remove('hidden');
+            
+            initGame();
+        }
+
+        function showSettings() {
+            stopTimer();
+            document.getElementById('settingsPanel').classList.remove('hidden');
+            document.getElementById('gamePanel').classList.add('hidden');
+        }
+
+        function initGame() {
+            moves = 0;
+            document.getElementById('moves').textContent = '0';
+            grid = Array(rows).fill().map(() => Array(cols).fill(false));
+            
+            // 随机点亮指定数量的灯
+            let lightsToTurn = totalLights;
+            while (lightsToTurn > 0) {
+                const r = Math.floor(Math.random() * rows);
+                const c = Math.floor(Math.random() * cols);
+                if (!grid[r][c]) {
+                    grid[r][c] = true;
+                    lightsToTurn--;
+                }
+            }
+            
+            renderGrid();
+            startTimer();
+            gameStartTime = Date.now();
+        }
+
+        function renderGrid() {
+            const gridElement = document.getElementById('grid');
+            gridElement.innerHTML = '';
+            
+            // 计算窗户大小
+            const maxWidth = 600;
+            const gap = 8;
+            const windowSize = Math.min(80, (maxWidth - (cols + 1) * gap) / cols);
+            
+            gridElement.style.gridTemplateColumns = `repeat(${cols}, ${windowSize}px)`;
+            gridElement.style.gridTemplateRows = `repeat(${rows}, ${windowSize}px)`;
+            
+            for (let r = 0; r < rows; r++) {
+                for (let c = 0; c < cols; c++) {
+                    const window = document.createElement('div');
+                    window.className = `window ${grid[r][c] ? 'on' : 'off'}`;
+                    window.dataset.row = r;
+                    window.dataset.col = c;
+                    window.onclick = () => toggleWindow(r, c);
+                    
+                    // 添加随机动物图标
+                    const animalIndex = (r * cols + c) % animals.length;
+                    window.textContent = animals[animalIndex];
+                    window.style.fontSize = `${windowSize * 0.5}px`;
+                    
+                    gridElement.appendChild(window);
+                }
+            }
+        }
+
+        function toggleWindow(r, c) {
+            if (isPaused) return;
+            
+            moves++;
+            document.getElementById('moves').textContent = moves;
+            
+            // 创建星星效果
+            createStars();
+            
+            // 切换当前窗户和相邻窗户
+            const positions = [
+                [r, c],
+                [r-1, c],
+                [r+1, c],
+                [r, c-1],
+                [r, c+1]
+            ];
+            
+            positions.forEach(([row, col]) => {
+                if (row >= 0 && row < rows && col >= 0 && col < cols) {
+                    grid[row][col] = !grid[row][col];
+                    const windowElement = document.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+                    windowElement.classList.add('flash');
+                    setTimeout(() => {
+                        windowElement.classList.remove('flash');
+                        windowElement.className = `window ${grid[row][col] ? 'on' : 'off'}`;
+                    }, 300);
+                }
+            });
+            
+            // 检查是否获胜
+            setTimeout(checkVictory, 400);
+        }
+
+        function createStars() {
+            for (let i = 0; i < 10; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.textContent = '✨';
+                star.style.left = Math.random() * window.innerWidth + 'px';
+                star.style.top = Math.random() * window.innerHeight + 'px';
+                document.body.appendChild(star);
+                
+                setTimeout(() => star.remove(), 1000);
+            }
+        }
+
+        function checkVictory() {
+            const allOff = grid.every(row => row.every(cell => !cell));
+            
+            if (allOff) {
+                stopTimer();
+                showVictory();
+            }
+        }
+
+        function showVictory() {
+            const elapsed = Math.floor((Date.now() - gameStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            document.getElementById('finalTime').textContent = 
+                `${minutes}分${seconds.toString().padStart(2, '0')}秒`;
+            document.getElementById('finalMoves').textContent = moves;
+            document.getElementById('victoryOverlay').style.display = 'flex';
+            
+            // 全屏星星和奖杯效果
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const trophy = document.createElement('div');
+                    trophy.style.position = 'fixed';
+                    trophy.style.fontSize = '3em';
+                    trophy.style.left = Math.random() * window.innerWidth + 'px';
+                    trophy.style.top = -50 + 'px';
+                    trophy.textContent = ['🏆', '⭐', '🎉', '✨', '🌟'][Math.floor(Math.random() * 5)];
+                    trophy.style.zIndex = '3000';
+                    trophy.style.animation = 'starfall 2s ease-out forwards';
+                    document.body.appendChild(trophy);
+                    setTimeout(() => trophy.remove(), 2000);
+                }, i * 50);
+            }
+        }
+
+        function closeVictory() {
+            document.getElementById('victoryOverlay').style.display = 'none';
+            showSettings();
+        }
+
+        function startTimer() {
+            timerSeconds = 900;
+            isPaused = false;
+            updateTimerDisplay();
+            
+            timerInterval = setInterval(() => {
+                if (!isPaused) {
+                    timerSeconds--;
+                    updateTimerDisplay();
+                    
+                    if (timerSeconds <= 0) {
+                        stopTimer();
+                        showRestScreen();
+                    }
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timerSeconds / 60);
+            const seconds = timerSeconds % 60;
+            document.getElementById('timer').textContent = 
+                `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function showRestScreen() {
+            isPaused = true;
+            document.getElementById('restOverlay').style.display = 'flex';
+        }
+
+        function continueGame() {
+            document.getElementById('restOverlay').style.display = 'none';
+            isPaused = false;
+            startTimer();
+        }
+
+        function restartGame() {
+            stopTimer();
+            initGame();
+        }
+
+        function closePage() {
+            if (confirm('Are you sure you want to close the page? 确定要关闭页面吗?')) {
+                window.close();
+                // 如果window.close()不起作用(某些浏览器限制),显示提示
+                setTimeout(() => {
+                    alert('Please manually close the browser tab. 请手动关闭浏览器标签页。');
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>
