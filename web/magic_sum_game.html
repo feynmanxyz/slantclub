@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 神奇等和数阵 🌟</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #764ba2;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+
+        .setup-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .setup-title {
+            font-size: 1.5em;
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        #patternGrid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .difficulty-section {
+            margin-bottom: 0;
+        }
+
+        .difficulty-header {
+            display: none;
+        }
+
+        .pattern-card {
+            border: 3px solid transparent;
+            border-radius: 15px;
+            padding: 10px 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+
+        .pattern-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        .pattern-card.selected {
+            border-color: #FFD700;
+            border-width: 5px;
+            border-style: solid;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.4);
+            transform: scale(1.15);
+            position: relative;
+        }
+        
+        .pattern-card.selected::before {
+            content: '✓';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: #FFD700;
+            color: #333;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            border: 3px solid white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+
+        .pattern-icon {
+            font-size: 1.5em;
+            margin-bottom: 4px;
+        }
+
+        .pattern-name {
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .pattern-desc {
+            font-size: 0.65em;
+            opacity: 0.9;
+        }
+
+        .pattern-stars {
+            display: none;
+        }
+
+        .start-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 15px 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        }
+
+        .game-panel {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 15px;
+            font-weight: bold;
+        }
+
+        .game-area {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .grid-container {
+            flex: 1;
+            min-width: 300px;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .numbers-panel {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 20px;
+            padding: 20px;
+            min-width: 250px;
+            max-width: 300px;
+        }
+
+        .numbers-title {
+            font-size: 1.3em;
+            color: #d63031;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .number-tile {
+            background: white;
+            border: 3px solid #d63031;
+            border-radius: 15px;
+            padding: 20px;
+            font-size: 2em;
+            font-weight: bold;
+            color: #d63031;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.3s;
+            user-select: none;
+        }
+
+        .number-tile:hover {
+            transform: scale(1.1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .number-tile.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .number-tile.used {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .grid-slot {
+            background: white;
+            border: 4px dashed #667eea;
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            position: absolute;
+            transition: all 0.3s;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .grid-slot.filled {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border-style: solid;
+            color: white;
+            border-color: #0984e3;
+            cursor: pointer;
+        }
+
+        .grid-slot.filled:hover {
+            transform: scale(1.15);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+
+        .grid-slot.highlight {
+            background: #ffe66d;
+            transform: scale(1.1);
+        }
+
+        .grid-line {
+            position: absolute;
+            height: 5px;
+            transform-origin: left center;
+            z-index: 1;
+            border-radius: 3px;
+            transition: all 0.3s;
+        }
+
+        .grid-line.highlight-line {
+            height: 8px;
+            box-shadow: 0 0 15px currentColor;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.1em;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .btn-back {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+
+        .message {
+            text-align: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 15px;
+            display: none;
+        }
+
+        .message.success {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            color: white;
+            display: block;
+        }
+
+        .message.error {
+            background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+            color: white;
+            display: block;
+        }
+
+        @keyframes celebration {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.2) rotate(-5deg); }
+            75% { transform: scale(1.2) rotate(5deg); }
+        }
+
+        .celebrate {
+            animation: celebration 0.5s ease-in-out 3;
+        }
+
+        .firework {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        .close-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn-close {
+            background: linear-gradient(135deg, #434343 0%, #000000 100%);
+            padding: 15px 60px;
+            font-size: 1.3em;
+        }
+
+        .btn-answer {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌟 Magic Sum Puzzle 🌟</h1>
+        <p class="subtitle">Make the sum of numbers on each line of the same color equal!</p>
+
+        <div id="setupPanel" class="setup-panel">
+            <div class="setup-title">🎮 Choose Your Puzzle Pattern</div>
+            <div id="patternGrid"></div>
+            <button class="start-btn" onclick="startGame()">🚀 Start Game</button>
+            
+            <div class="close-section">
+                <button class="btn btn-close" onclick="window.close()">🚪 Close</button>
+            </div>
+        </div>
+
+        <div id="gamePanel" class="game-panel">
+            <div class="game-header">
+                <div class="info-box">🎯 Target Sum: <span id="targetSum">0</span></div>
+                <div class="info-box">📊 Pattern: <span id="currentPattern"></span></div>
+            </div>
+
+            <div class="game-area">
+                <div class="grid-container" id="gridContainer"></div>
+                <div class="numbers-panel">
+                    <div class="numbers-title">🔢 Available Numbers</div>
+                    <div class="numbers-grid" id="numbersGrid"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-check" onclick="checkAnswer()">✅ Check Answer</button>
+                <button class="btn btn-answer" onclick="showAnswer()">💡 Show Answer</button>
+                <button class="btn btn-reset" onclick="resetGame()">🔄 Reset</button>
+                <button class="btn btn-back" onclick="backToSetup()">🏠 Back</button>
+            </div>
+
+            <div class="close-section">
+                <button class="btn btn-close" onclick="window.close()">🚪 Close</button>
+            </div>
+
+            <div class="message" id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        // 线条颜色方案
+        const lineColors = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', 
+            '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2',
+            '#F8B739', '#52B788'
+        ];
+
+        // 数阵模式定义 - 8个图形
+        const patterns = [
+            {
+                name: 'Triangle Star',
+                icon: '⭐',
+                desc: '3 lines',
+                color: '#FF6B6B',
+                slots: [
+                    {x: 50, y: 15},
+                    {x: 20, y: 75},
+                    {x: 80, y: 75},
+                    {x: 35, y: 45},
+                    {x: 65, y: 45},
+                    {x: 50, y: 75}
+                ],
+                lines: [
+                    [0, 3, 1],
+                    [0, 4, 2],
+                    [1, 5, 2]
+                ],
+                solution: [1, 2, 3, 6, 5, 4]
+            },
+            {
+                name: 'Flower',
+                icon: '🌸',
+                desc: '4 lines',
+                color: '#FF85C1',
+                slots: [
+                    {x: 50, y: 50},
+                    {x: 50, y: 15},
+                    {x: 85, y: 50},
+                    {x: 50, y: 85},
+                    {x: 15, y: 50}
+                ],
+                lines: [
+                    [0, 1],
+                    [0, 2],
+                    [0, 3],
+                    [0, 4]
+                ],
+                solution: [4, 3, 6, 5, 2]
+            },
+            {
+                name: 'Cross',
+                icon: '➕',
+                desc: '2 lines',
+                color: '#4ECDC4',
+                slots: [
+                    {x: 50, y: 20},
+                    {x: 50, y: 50},
+                    {x: 50, y: 80},
+                    {x: 20, y: 50},
+                    {x: 80, y: 50}
+                ],
+                lines: [
+                    [0, 1, 2],
+                    [3, 1, 4]
+                ],
+                solution: [1, 3, 5, 2, 4]
+            },
+            {
+                name: 'Square',
+                icon: '⬛',
+                desc: '4 lines',
+                color: '#95E1D3',
+                slots: [
+                    {x: 20, y: 20},
+                    {x: 50, y: 20},
+                    {x: 80, y: 20},
+                    {x: 80, y: 50},
+                    {x: 80, y: 80},
+                    {x: 50, y: 80},
+                    {x: 20, y: 80},
+                    {x: 20, y: 50}
+                ],
+                lines: [
+                    [0, 1, 2],
+                    [2, 3, 4],
+                    [4, 5, 6],
+                    [6, 7, 0]
+                ],
+                solution: [1, 4, 8, 3, 2, 6, 5, 7]
+            },
+            {
+                name: 'Butterfly',
+                icon: '🦋',
+                desc: '5 lines',
+                color: '#A8E6CF',
+                slots: [
+                    {x: 50, y: 50},
+                    {x: 25, y: 25},
+                    {x: 75, y: 25},
+                    {x: 25, y: 75},
+                    {x: 75, y: 75},
+                    {x: 15, y: 50},
+                    {x: 85, y: 50}
+                ],
+                lines: [
+                    [1, 0, 2],
+                    [3, 0, 4],
+                    [5, 0, 6],
+                    [1, 5, 3],
+                    [2, 6, 4]
+                ],
+                solution: [4, 1, 7, 5, 3, 6, 2]
+            },
+            {
+                name: 'Diamond',
+                icon: '🔶',
+                desc: '3 lines',
+                color: '#FFD93D',
+                slots: [
+                    {x: 50, y: 15},
+                    {x: 25, y: 50},
+                    {x: 50, y: 50},
+                    {x: 75, y: 50},
+                    {x: 50, y: 85}
+                ],
+                lines: [
+                    [0, 1, 4],
+                    [0, 3, 4],
+                    [1, 2, 3]
+                ],
+                solution: [3, 2, 4, 5, 6]
+            },
+            {
+                name: 'Windmill',
+                icon: '🎐',
+                desc: '4 lines',
+                color: '#C4B5FD',
+                slots: [
+                    {x: 50, y: 50},
+                    {x: 50, y: 20},
+                    {x: 70, y: 30},
+                    {x: 80, y: 50},
+                    {x: 70, y: 70},
+                    {x: 50, y: 80},
+                    {x: 30, y: 70},
+                    {x: 20, y: 50},
+                    {x: 30, y: 30}
+                ],
+                lines: [
+                    [1, 0, 5],
+                    [7, 0, 3],
+                    [8, 0, 4],
+                    [2, 0, 6]
+                ],
+                solution: [1, 2, 3, 4, 5, 9, 8, 7, 6]
+            },
+            {
+                name: 'Octagon',
+                icon: '⬟',
+                desc: '4 lines',
+                color: '#FFDAB9',
+                slots: [
+                    {x: 50, y: 10},
+                    {x: 75, y: 25},
+                    {x: 85, y: 50},
+                    {x: 75, y: 75},
+                    {x: 50, y: 90},
+                    {x: 25, y: 75},
+                    {x: 15, y: 50},
+                    {x: 25, y: 25},
+                    {x: 50, y: 50}
+                ],
+                lines: [
+                    [0, 8, 4],
+                    [2, 8, 6],
+                    [1, 8, 5],
+                    [3, 8, 7]
+                ],
+                solution: [2, 5, 7, 4, 8, 6, 3, 9, 1]
+            }
+        ];
+
+        let currentPattern = null;
+        let gameState = [];
+        let selectedNumber = null;
+        let availableNumbers = [];
+        let solutionMap = {};
+
+        // 初始化
+        function init() {
+            const container = document.getElementById('patternGrid');
+            container.innerHTML = '';
+            
+            // 直接渲染所有图形
+            patterns.forEach((pattern, index) => {
+                const card = document.createElement('div');
+                card.className = 'pattern-card';
+                card.style.background = pattern.color;
+                card.innerHTML = `
+                    <div class="pattern-icon">${pattern.icon}</div>
+                    <div class="pattern-name">${pattern.name}</div>
+                    <div class="pattern-desc">${pattern.desc}</div>
+                `;
+                card.onclick = () => selectPattern(index, card);
+                container.appendChild(card);
+            });
+        }
+
+        function selectPattern(index, element) {
+            document.querySelectorAll('.pattern-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+            currentPattern = JSON.parse(JSON.stringify(patterns[index]));
+        }
+
+        function startGame() {
+            if (!currentPattern) {
+                alert('Please select a puzzle pattern first!');
+                return;
+            }
+
+            document.getElementById('setupPanel').style.display = 'none';
+            document.getElementById('gamePanel').style.display = 'block';
+            document.getElementById('currentPattern').textContent = currentPattern.name;
+
+            initGame();
+        }
+
+        function initGame() {
+            gameState = new Array(currentPattern.slots.length).fill(null);
+            generateSolvableNumbers();
+            renderGrid();
+            renderNumbers();
+        }
+
+        // 生成可解的数字组合
+        function generateSolvableNumbers() {
+            // 使用预设的解决方案
+            const baseSolution = currentPattern.solution;
+            
+            // 计算基础解的目标和（使用第一条线）
+            const firstLine = currentPattern.lines[0];
+            const baseTargetSum = firstLine.reduce((sum, idx) => sum + baseSolution[idx], 0);
+            
+            // 生成随机偏移，确保所有数字都>=1
+            const minValue = Math.min(...baseSolution);
+            const maxOffset = 20;  // 最大向上偏移
+            const minOffset = 1 - minValue;  // 确保最小值至少为1
+            
+            const offset = Math.floor(Math.random() * (maxOffset - minOffset + 1)) + minOffset;
+            
+            // 给所有数字加上相同的偏移，保持相对关系
+            const numbers = baseSolution.map(n => n + offset);
+            
+            // 验证没有重复且都是正数
+            const uniqueNumbers = new Set(numbers);
+            if (uniqueNumbers.size !== numbers.length || Math.min(...numbers) < 1) {
+                // 如果有重复或负数，重新生成
+                generateSolvableNumbers();
+                return;
+            }
+            
+            // 新的目标和
+            const targetSum = baseTargetSum + (firstLine.length * offset);
+            
+            // 保存解决方案映射
+            solutionMap = {};
+            for (let i = 0; i < numbers.length; i++) {
+                solutionMap[i] = numbers[i];
+            }
+            
+            // 创建可用数字列表（打乱顺序显示）
+            availableNumbers = [...numbers];
+            shuffleArray(availableNumbers);
+            
+            currentPattern.targetSum = targetSum;
+            document.getElementById('targetSum').textContent = targetSum;
+            
+            // 验证解是否正确（调试用）
+            console.log('生成的数字:', numbers);
+            console.log('验证解决方案:');
+            currentPattern.lines.forEach((line, idx) => {
+                const sum = line.reduce((s, i) => s + solutionMap[i], 0);
+                console.log(`线 ${idx}: ${line.map(i => solutionMap[i]).join('+')} = ${sum}`);
+            });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function renderGrid() {
+            const container = document.getElementById('gridContainer');
+            container.innerHTML = '';
+            
+            const containerWidth = container.offsetWidth || 400;
+            const containerHeight = containerWidth;
+            container.style.height = containerHeight + 'px';
+            container.style.position = 'relative';
+
+            // 绘制所有线条
+            currentPattern.lines.forEach((line, lineIndex) => {
+                if (line.length >= 2) {
+                    for (let i = 0; i < line.length - 1; i++) {
+                        const start = currentPattern.slots[line[i]];
+                        const end = currentPattern.slots[line[i + 1]];
+                        drawLine(container, start, end, containerWidth, containerHeight, lineIndex);
+                    }
+                }
+            });
+
+            // 绘制槽位
+            currentPattern.slots.forEach((slot, index) => {
+                const slotEl = document.createElement('div');
+                slotEl.className = 'grid-slot';
+                slotEl.dataset.index = index;
+                slotEl.style.left = (slot.x / 100 * containerWidth - 40) + 'px';
+                slotEl.style.top = (slot.y / 100 * containerHeight - 40) + 'px';
+                
+                slotEl.onclick = () => {
+                    if (gameState[index] !== null) {
+                        removeNumber(index);
+                    } else {
+                        placeNumber(index);
+                    }
+                };
+                
+                slotEl.ondragover = (e) => e.preventDefault();
+                slotEl.ondrop = (e) => {
+                    e.preventDefault();
+                    placeNumber(index);
+                };
+
+                container.appendChild(slotEl);
+            });
+
+            updateGridDisplay();
+        }
+
+        function drawLine(container, start, end, width, height, lineIndex) {
+            const line = document.createElement('div');
+            line.className = 'grid-line';
+            line.dataset.lineIndex = lineIndex;
+            
+            const x1 = start.x / 100 * width;
+            const y1 = start.y / 100 * height;
+            const x2 = end.x / 100 * width;
+            const y2 = end.y / 100 * height;
+            
+            const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+            
+            line.style.width = length + 'px';
+            line.style.left = x1 + 'px';
+            line.style.top = y1 + 'px';
+            line.style.transform = `rotate(${angle}deg)`;
+            line.style.background = lineColors[lineIndex % lineColors.length];
+            
+            container.appendChild(line);
+        }
+
+        function renderNumbers() {
+            const grid = document.getElementById('numbersGrid');
+            grid.innerHTML = '';
+            
+            availableNumbers.forEach(num => {
+                const tile = document.createElement('div');
+                tile.className = 'number-tile';
+                tile.textContent = num;
+                tile.dataset.number = num;
+                tile.draggable = true;
+                
+                tile.onclick = () => {
+                    if (!tile.classList.contains('used')) {
+                        document.querySelectorAll('.number-tile').forEach(t => t.classList.remove('highlight'));
+                        tile.classList.add('highlight');
+                        selectedNumber = num;
+                    }
+                };
+
+                tile.ondragstart = (e) => {
+                    if (!tile.classList.contains('used')) {
+                        tile.classList.add('dragging');
+                        selectedNumber = num;
+                    } else {
+                        e.preventDefault();
+                    }
+                };
+
+                tile.ondragend = () => {
+                    tile.classList.remove('dragging');
+                };
+                
+                grid.appendChild(tile);
+            });
+            
+            updateNumbersDisplay();
+        }
+
+        function updateNumbersDisplay() {
+            availableNumbers.forEach(num => {
+                const tiles = document.querySelectorAll(`.number-tile[data-number="${num}"]`);
+                const isUsed = gameState.includes(num);
+                
+                tiles.forEach(tile => {
+                    if (isUsed) {
+                        tile.classList.add('used');
+                    } else {
+                        tile.classList.remove('used');
+                    }
+                });
+            });
+        }
+
+        function placeNumber(slotIndex) {
+            if (selectedNumber === null) return;
+            
+            if (gameState[slotIndex] !== null) {
+                gameState[slotIndex] = null;
+            }
+            
+            gameState[slotIndex] = selectedNumber;
+            selectedNumber = null;
+            
+            updateGridDisplay();
+            updateNumbersDisplay();
+            updateLineHighlights();
+            document.querySelectorAll('.number-tile').forEach(t => t.classList.remove('highlight'));
+        }
+
+        function removeNumber(slotIndex) {
+            if (gameState[slotIndex] !== null) {
+                gameState[slotIndex] = null;
+                updateGridDisplay();
+                updateNumbersDisplay();
+                updateLineHighlights();
+            }
+        }
+
+        function updateGridDisplay() {
+            document.querySelectorAll('.grid-slot').forEach((slot, index) => {
+                if (gameState[index] !== null) {
+                    slot.textContent = gameState[index];
+                    slot.classList.add('filled');
+                } else {
+                    slot.textContent = '';
+                    slot.classList.remove('filled');
+                }
+            });
+        }
+
+        function updateLineHighlights() {
+            currentPattern.lines.forEach((line, lineIndex) => {
+                const sum = line.reduce((acc, idx) => {
+                    return gameState[idx] !== null ? acc + gameState[idx] : acc;
+                }, 0);
+                
+                const hasNull = line.some(idx => gameState[idx] === null);
+                const lines = document.querySelectorAll(`.grid-line[data-line-index="${lineIndex}"]`);
+                
+                lines.forEach(lineEl => {
+                    if (!hasNull && sum === currentPattern.targetSum) {
+                        lineEl.classList.add('highlight-line');
+                    } else {
+                        lineEl.classList.remove('highlight-line');
+                    }
+                });
+            });
+        }
+
+        function checkAnswer() {
+            const message = document.getElementById('message');
+            
+            if (gameState.includes(null)) {
+                message.className = 'message error';
+                message.textContent = '❌ There are still empty slots!';
+                return;
+            }
+
+            let allCorrect = true;
+            currentPattern.lines.forEach(line => {
+                const sum = line.reduce((acc, idx) => acc + gameState[idx], 0);
+                if (sum !== currentPattern.targetSum) {
+                    allCorrect = false;
+                }
+            });
+
+            if (allCorrect) {
+                message.className = 'message success';
+                message.textContent = '🎉 Excellent! You solved it!';
+                document.querySelector('.game-panel').classList.add('celebrate');
+                createFireworks();
+                setTimeout(() => {
+                    document.querySelector('.game-panel').classList.remove('celebrate');
+                }, 2000);
+            } else {
+                message.className = 'message error';
+                message.textContent = '💭 Not quite right. Check if each line sums to ' + currentPattern.targetSum;
+            }
+        }
+
+        function createFireworks() {
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => {
+                    const firework = document.createElement('div');
+                    firework.className = 'firework';
+                    firework.style.left = Math.random() * window.innerWidth + 'px';
+                    firework.style.top = Math.random() * window.innerHeight + 'px';
+                    firework.style.background = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                    document.body.appendChild(firework);
+                    setTimeout(() => firework.remove(), 1000);
+                }, i * 50);
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('message').style.display = 'none';
+            initGame();
+        }
+
+        function backToSetup() {
+            document.getElementById('setupPanel').style.display = 'block';
+            document.getElementById('gamePanel').style.display = 'none';
+            document.getElementById('message').style.display = 'none';
+        }
+
+        function showAnswer() {
+            for (let i = 0; i < currentPattern.slots.length; i++) {
+                gameState[i] = solutionMap[i];
+            }
+            
+            updateGridDisplay();
+            updateNumbersDisplay();
+            updateLineHighlights();
+            
+            const message = document.getElementById('message');
+            message.className = 'message success';
+            message.textContent = '📖 Here is the answer! Each line sums to ' + currentPattern.targetSum;
+        }
+
+        init();
+    </script>
+</body>
+</html>
