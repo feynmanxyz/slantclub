@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童智力乐园</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .background {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .clickable-area {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            border-radius: 50%;
+        }
+
+        .clickable-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .clickable-area:active {
+            transform: scale(0.95);
+        }
+
+        /* 粉色蘑菇房子的门 - 左下角 */
+        .door1 {
+            left: 8.5%;
+            top: 55%;
+            width: 4%;
+            height: 8%;
+        }
+
+        /* 蓝色大蘑菇房子的门 - 中间偏左 */
+        .door2 {
+            left: 21%;
+            top: 45%;
+            width: 3%;
+            height: 8%;
+        }
+
+        /* 红色大蘑菇房子的门 - 右边 */
+        .door3 {
+            left: 61.5%;
+            top: 40%;
+            width: 3%;
+            height: 6%;
+        }
+
+        /* 橙红色蘑菇房子的门 - 中间偏右 */
+        .door4 {
+            left: 40%;
+            top: 45%;
+            width: 5%;
+            height: 12%;
+        }
+
+        /* 门上的标题文字 */
+        .door-label {
+            position: absolute;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            animation: swing 2s ease-in-out infinite;
+            transform-origin: top center;
+            white-space: nowrap;
+        }
+
+        .door-label:hover {
+            transform: scale(1.0);
+            animation: none;
+        }
+
+        @keyframes swing {
+            0%, 100% {
+                transform: rotate(-5deg);
+            }
+            50% {
+                transform: rotate(5deg);
+            }
+        }
+
+        .label1 {
+            left: 8%;
+            top: 50%;
+            background: linear-gradient(135deg, #df8c97 0%, #e79393 100%);
+        }
+
+        .label2 {
+            left: 20%;
+            top: 42.5%;
+            background: linear-gradient(135deg, #4ccfb3 0%, #6ee7b5 100%);
+        }
+
+        .label3 {
+            left: 60.7%;
+            top: 37.5%;
+            background: linear-gradient(135deg, #ec4545 0%, #ec5353 100%);
+        }
+
+        .label4 {
+            left: 40%;
+            top: 40%;
+            background: linear-gradient(135deg, #e0693a 0%, #ff6a88 100%);
+        }
+
+        /* 河流中的漂浮按钮 */
+        .river-button {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .river-button:hover {
+            transform: scale(1.15) !important;
+            z-index: 10;
+        }
+
+        /* 漂浮动画 */
+        @keyframes float1 {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(10px, -15px) rotate(5deg);
+            }
+            50% {
+                transform: translate(-5px, -10px) rotate(-3deg);
+            }
+            75% {
+                transform: translate(8px, -20px) rotate(4deg);
+            }
+        }
+
+        @keyframes float2 {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            33% {
+                transform: translate(-12px, -18px) rotate(-6deg);
+            }
+            66% {
+                transform: translate(15px, -12px) rotate(5deg);
+            }
+        }
+
+        @keyframes float3 {
+            0%, 100% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+            25% {
+                transform: translate(-8px, -22px) rotate(4deg);
+            }
+            50% {
+                transform: translate(12px, -15px) rotate(-5deg);
+            }
+            75% {
+                transform: translate(-10px, -18px) rotate(3deg);
+            }
+        }
+
+        .btn1 {
+            left: 15%;
+            top: 70%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            animation: float1 4s ease-in-out infinite;
+        }
+
+        .btn2 {
+            left: 26%;
+            top: 70%;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            animation: float2 3.5s ease-in-out infinite;
+        }
+
+        .btn3 {
+            left: 37%;
+            top: 68%;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            animation: float3 4.2s ease-in-out infinite;
+        }
+
+        .btn4 {
+            left: 48%;
+            top: 63%;
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            animation: float1 3.8s ease-in-out infinite 0.5s;
+        }
+
+        .btn5 {
+            left: 59%;
+            top: 58%;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            animation: float2 4.1s ease-in-out infinite 0.8s;
+        }
+
+        .btn6 {
+            left: 70%;
+            top: 52%;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%);
+            animation: float3 3.6s ease-in-out infinite 1s;
+        }
+
+        /* 提示标签 */
+        .tooltip {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .tooltip {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+            
+            .door-label {
+                font-size: 12px;
+                padding: 6px 12px;
+            }
+            
+            .river-button {
+                width: 60px;
+                height: 60px;
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="img/playmain.jpg" alt="儿童智力乐园" class="background">
+        
+        <!-- 四个蘑菇房子的门的可点击区域 -->
+        <a href="https://mathclub.aibykids.org/web/magic_sum_game.html" target="_blank" class="clickable-area door1" title="数阵游戏"></a>
+        <a href="https://mathclub.aibykids.org/web/point24_game4.html" target="_blank" class="clickable-area door2" title="24点"></a>
+        <a href="https://mathclub.aibykids.org/web/math_maze3.html" target="_blank" class="clickable-area door3" title="数字迷宫游戏"></a>
+        <a href="https://mathclub.aibykids.org/web/sudoku_game.html" target="_blank" class="clickable-area door4" title="数独游戏"></a>
+        
+        <!-- 门上的标题标签 -->
+        <a href="https://mathclub.aibykids.org/web/magic_sum_game.html" target="_blank" class="door-label label1">数阵游戏</a>
+        <a href="https://mathclub.aibykids.org/web/point24_game4.html" target="_blank" class="door-label label2">24点挑战</a>
+        <a href="https://mathclub.aibykids.org/web/math_maze3.html" target="_blank" class="door-label label3">数字迷宫</a>
+        <a href="https://mathclub.aibykids.org/web/sudoku_game.html" target="_blank" class="door-label label4">数独游戏</a>
+        
+        <!-- 河流中的6个漂浮按钮 -->
+        <a href="math_shugan1-5.html" target="_blank" class="river-button btn1">1年级</a>
+        <a href="shopping_math_game2.html" target="_blank" class="river-button btn2">2年级</a>
+        <a href="math_maze3.html" target="_blank" class="river-button btn3">3年级</a>
+        <a href="shopping_math_game4.html" target="_blank" class="river-button btn4">4年级</a>
+        <a href="magic_sum_game.html" target="_blank" class="river-button btn5">5年级</a>
+        <a href="sudoku_game.html" target="_blank" class="river-button btn6">6年级</a>
+        
+        <div class="tooltip">
+            ✨ 快来点击进入探险吧！✨ 
+        </div>
+    </div>
+
+    <script>
+        // 为每个门添加点击音效反馈（可选）
+        const doors = document.querySelectorAll('.clickable-area');
+        
+        doors.forEach(door => {
+            door.addEventListener('mouseenter', function() {
+                this.style.boxShadow = '0 0 20px rgba(255, 255, 100, 0.8)';
+            });
+            
+            door.addEventListener('mouseleave', function() {
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // 3秒后隐藏提示
+        setTimeout(() => {
+            const tooltip = document.querySelector('.tooltip');
+            tooltip.style.opacity = '0';
+            tooltip.style.transition = 'opacity 1s';
+        }, 3000);
+    </script>
+</body>
+</html>
