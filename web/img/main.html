@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>儿童乐园</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .background {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .clickable-area {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+            border-radius: 50%;
+        }
+
+        .clickable-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .clickable-area:active {
+            transform: scale(0.95);
+        }
+
+        /* 粉色蘑菇房子的门 - 左下角 */
+        .door1 {
+            left: 8.5%;
+            top: 55%;
+            width: 4%;
+            height: 8%;
+        }
+
+        /* 蓝色大蘑菇房子的门 - 中间偏左 */
+        .door2 {
+            left: 21%;
+            top: 45%;
+            width: 3%;
+            height: 8%;
+        }
+
+        /*红色大蘑菇房子的门 - 右边 */
+        .door3 {
+            left: 61.5%;
+            top: 39.7%;
+            width: 3%;
+            height: 6%;
+        }
+
+        /*  橙红色蘑菇房子的门 - 中间偏右 */
+        .door4 {
+            left: 40%;
+            top: 45%;
+            width: 5%;
+            height: 12%;
+        }
+
+        /* 提示标签 */
+        .tooltip {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateX(-50%) translateY(0);
+            }
+            50% {
+                transform: translateX(-50%) translateY(-10px);
+            }
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .tooltip {
+                font-size: 14px;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="mainOK.png" alt="儿童乐园背景" class="background">
+        
+        <!-- 四个蘑菇房子的门的可点击区域 -->
+        <a href="https://mathclub.aibykids.org/web/magic_sum_game.html" target="_blank" class="clickable-area door1" title="数阵游戏"></a>
+        <a href="https://mathclub.aibykids.org/web/point24_game4.html" target="_blank" class="clickable-area door2" title="24点"></a>
+        <a href="https://mathclub.aibykids.org/web/math_maze3.html" target="_blank" class="clickable-area door3" title="数字迷宫游戏"></a>
+        <a href="https://mathclub.aibykids.org/web/sudoku_game.html" target="_blank" class="clickable-area door4" title="数独游戏"></a>
+        
+        <div class="tooltip">
+            ✨ 点击蘑菇房子的门进入探险！
+        </div>
+    </div>
+
+    <script>
+        // 为每个门添加点击音效反馈（可选）
+        const doors = document.querySelectorAll('.clickable-area');
+        
+        doors.forEach(door => {
+            door.addEventListener('mouseenter', function() {
+                this.style.boxShadow = '0 0 20px rgba(255, 255, 100, 0.8)';
+            });
+            
+            door.addEventListener('mouseleave', function() {
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // 3秒后隐藏提示
+        setTimeout(() => {
+            const tooltip = document.querySelector('.tooltip');
+            tooltip.style.opacity = '0';
+            tooltip.style.transition = 'opacity 1s';
+        }, 3000);
+    </script>
+</body>
+</html>
