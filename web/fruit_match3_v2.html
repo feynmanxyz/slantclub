@@ -1,0 +1,462 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#wrap{max-width:660px;margin:0 auto;padding:12px}
+#topbar{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+#topbar label{font-size:12px;color:var(--color-text-secondary)}
+#topbar select{font-size:12px;padding:3px 6px;border:0.5px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary)}
+#topbar input[type=checkbox]{accent-color:#1a7f5a}
+#stats{display:flex;gap:8px;margin-bottom:8px}
+.stat{flex:1;background:var(--color-background-secondary);border-radius:8px;padding:7px 10px;min-width:0}
+.stat-label{font-size:11px;color:var(--color-text-secondary)}
+.stat-val{font-size:20px;font-weight:500;color:var(--color-text-primary);line-height:1.2}
+.stat-val.danger{color:#c0392b}
+#combo-banner{height:26px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#c0392b;margin-bottom:6px;transition:opacity .3s}
+#board-wrap{overflow:auto;display:flex;justify-content:center;position:relative}
+#board{display:grid;gap:3px;user-select:none}
+.cell{display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;border:2px solid transparent;transition:transform .12s,border-color .12s;background:var(--color-background-secondary)}
+.cell:hover{transform:scale(1.08);border-color:rgba(26,127,90,0.45)}
+.cell.selected{border-color:#1a7f5a;transform:scale(1.12);background:rgba(26,127,90,0.13)}
+.cell.invalid{animation:shake .25s ease}
+.cell.matched{animation:pop .35s ease forwards}
+.cell.falling{animation:fall .2s ease-out}
+.cell.new-in{animation:drop-in .22s ease-out}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes pop{0%{transform:scale(1);opacity:1}40%{transform:scale(1.5);opacity:.7}70%{transform:scale(.4) rotate(20deg);opacity:.3}100%{transform:scale(0);opacity:0}}
+@keyframes fall{0%{transform:translateY(-10px)}100%{transform:translateY(0)}}
+@keyframes drop-in{0%{transform:translateY(-28px) scale(.5);opacity:0}100%{transform:translateY(0) scale(1);opacity:1}}
+#btns{display:flex;gap:8px;margin-top:10px}
+#btns button{flex:1;padding:8px;border:0.5px solid var(--color-border-secondary);border-radius:7px;background:var(--color-background-primary);color:var(--color-text-primary);font-size:13px;cursor:pointer}
+#btns button:hover{background:var(--color-background-secondary)}
+#btns button.primary{background:#1a7f5a;color:#fff;border-color:transparent}
+#btns button.primary:hover{background:#156648}
+#gameover{display:none;position:absolute;inset:0;background:rgba(0,0,0,.55);border-radius:10px;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10}
+#gameover h2{color:#fff;font-size:22px;font-weight:500}
+#gameover p{color:rgba(255,255,255,.85);font-size:14px}
+#gameover button{padding:9px 28px;background:#fff;border:none;border-radius:7px;font-size:14px;cursor:pointer;font-weight:500}
+#board-container{position:relative}
+</style>
+
+<div id="wrap">
+  <div id="topbar">
+    <label>布局
+      <select id="sel-size">
+        <option value="5">5×5</option>
+        <option value="6">6×6</option>
+        <option value="7">7×7</option>
+        <option value="8" selected>8×8</option>
+        <option value="10">10×10</option>
+        <option value="12">12×12</option>
+        <option value="15">15×15</option>
+      </select>
+    </label>
+    <label>难度
+      <select id="sel-diff">
+        <option value="3">简单（3种）</option>
+        <option value="4">普通（4种）</option>
+        <option value="5" selected>中等（5种）</option>
+        <option value="6">困难（6种）</option>
+        <option value="7">很难（7种）</option>
+        <option value="8">地狱（8种）</option>
+      </select>
+    </label>
+    <label>时长
+      <select id="sel-time">
+        <option value="60" selected>60秒</option>
+        <option value="90">90秒</option>
+        <option value="120">120秒</option>
+        <option value="180">180秒</option>
+      </select>
+    </label>
+    <label style="display:flex;align-items:center;gap:4px">
+      <input type="checkbox" id="chk-fall" checked> 下落补位
+    </label>
+  </div>
+
+  <div id="stats">
+    <div class="stat"><div class="stat-label">得分</div><div class="stat-val" id="st-score">0</div></div>
+    <div class="stat"><div class="stat-label">连击</div><div class="stat-val" id="st-combo">×1</div></div>
+    <div class="stat"><div class="stat-label">消除</div><div class="stat-val" id="st-cleared">0</div></div>
+    <div class="stat"><div class="stat-label">剩余</div><div class="stat-val" id="st-time">60</div></div>
+  </div>
+
+  <div id="combo-banner" style="opacity:0"></div>
+
+  <div id="board-container">
+    <div id="board-wrap"><div id="board"></div></div>
+    <div id="gameover">
+      <h2>时间到！</h2>
+      <p id="go-score"></p>
+      <button onclick="newGame()">再来一局</button>
+    </div>
+  </div>
+
+  <div id="btns">
+    <button class="primary" onclick="newGame()">新游戏</button>
+    <button onclick="shuffleBoard()">重新洗牌</button>
+    <button onclick="hintFlash()">提示</button>
+  </div>
+</div>
+
+<script>
+const FRUITS=['🍒','🍓','🍇','🍋','🍊','🍎','🍐','🍑'];
+let grid=[],R=8,C=8,TYPES=5,FALL=true;
+let score=0,combo=1,cleared=0,timeLeft=60,maxTime=60;
+let selected=null,busy=false,timerID=null,comboTO=null;
+let audioCtx=null;
+
+function ac(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+
+function playPop(level){
+  try{
+    const ctx=ac(),now=ctx.currentTime;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sine';
+    const base=400+level*55;
+    o.frequency.setValueAtTime(base,now);
+    o.frequency.exponentialRampToValueAtTime(base*1.6,now+0.07);
+    g.gain.setValueAtTime(0.18,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.18);
+    o.start(now);o.stop(now+0.18);
+  }catch(e){}
+}
+
+function playCombo(c){
+  try{
+    const ctx=ac(),now=ctx.currentTime;
+    const notes=[1,1.26,1.5,2].slice(0,Math.min(c,4));
+    notes.forEach((m,i)=>{
+      const o=ctx.createOscillator(),g=ctx.createGain();
+      o.connect(g);g.connect(ctx.destination);
+      o.type='triangle';
+      o.frequency.value=440*m;
+      const t=now+i*0.08;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(0.15,t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.001,t+0.25);
+      o.start(t);o.stop(t+0.25);
+    });
+  }catch(e){}
+}
+
+function playInvalid(){
+  try{
+    const ctx=ac(),now=ctx.currentTime;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sawtooth';o.frequency.value=180;
+    g.gain.setValueAtTime(0.08,now);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.12);
+    o.start(now);o.stop(now+0.12);
+  }catch(e){}
+}
+
+const board=document.getElementById('board');
+const stScore=document.getElementById('st-score');
+const stCombo=document.getElementById('st-combo');
+const stCleared=document.getElementById('st-cleared');
+const stTime=document.getElementById('st-time');
+const comboBanner=document.getElementById('combo-banner');
+const gameoverEl=document.getElementById('gameover');
+
+function rnd(n){return Math.floor(Math.random()*n)}
+function randFruit(){return FRUITS[rnd(TYPES)]}
+
+function newGame(){
+  R=C=+document.getElementById('sel-size').value;
+  TYPES=+document.getElementById('sel-diff').value;
+  FALL=document.getElementById('chk-fall').checked;
+  timeLeft=maxTime=+document.getElementById('sel-time').value;
+  score=0;combo=1;cleared=0;selected=null;busy=false;
+  stScore.textContent='0';stCombo.textContent='×1';stCleared.textContent='0';
+  stTime.textContent=timeLeft;stTime.classList.remove('danger');
+  comboBanner.style.opacity='0';
+  gameoverEl.style.display='none';
+  clearInterval(timerID);
+  do{grid=makeGrid();}while(!hasMoves());
+  renderBoard();
+  timerID=setInterval(tick,1000);
+}
+
+function makeGrid(){
+  const g=[];
+  for(let r=0;r<R;r++){
+    g.push([]);
+    for(let c=0;c<C;c++) g[r].push(safeRandom(g,r,c));
+  }
+  return g;
+}
+
+function safeRandom(g,r,c){
+  const used=new Set();
+  if(r>=2&&g[r-1]&&g[r-1][c]===g[r-2][c]) used.add(g[r-1][c]);
+  if(c>=2&&g[r][c-1]===g[r][c-2]) used.add(g[r][c-1]);
+  const pool=FRUITS.slice(0,TYPES).filter(f=>!used.has(f));
+  return (pool.length?pool:FRUITS.slice(0,TYPES))[rnd(pool.length||TYPES)];
+}
+
+function cellSize(){
+  const maxW=Math.min(580,window.innerWidth-32);
+  return Math.max(22,Math.floor((maxW-C*3)/C));
+}
+
+function renderBoard(){
+  const sz=cellSize();
+  board.style.gridTemplateColumns=`repeat(${C},${sz}px)`;
+  board.style.gridTemplateRows=`repeat(${R},${sz}px)`;
+  board.innerHTML='';
+  for(let r=0;r<R;r++) for(let c=0;c<C;c++){
+    const el=document.createElement('div');
+    el.className='cell';
+    el.style.cssText=`font-size:${Math.round(sz*.58)}px;width:${sz}px;height:${sz}px;font-family:"Apple Color Emoji","Segoe UI Emoji",sans-serif`;
+    el.textContent=grid[r][c]||'';
+    el.dataset.r=r;el.dataset.c=c;
+    el.addEventListener('click',()=>onCellClick(r,c));
+    board.appendChild(el);
+  }
+}
+
+function getCell(r,c){return board.children[r*C+c]||null}
+
+function clearSelection(){
+  if(selected){
+    const el=getCell(selected.r,selected.c);
+    if(el) el.classList.remove('selected');
+    selected=null;
+  }
+}
+
+function onCellClick(r,c){
+  if(busy||timeLeft<=0) return;
+
+  if(!selected){
+    selected={r,c};
+    getCell(r,c).classList.add('selected');
+    return;
+  }
+
+  const {r:sr,c:sc}=selected;
+
+  // clicking the same cell → deselect
+  if(sr===r&&sc===c){
+    clearSelection();
+    return;
+  }
+
+  // not adjacent → move selection to new cell
+  if(Math.abs(r-sr)+Math.abs(c-sc)!==1){
+    clearSelection();
+    selected={r,c};
+    getCell(r,c).classList.add('selected');
+    return;
+  }
+
+  // adjacent → attempt swap
+  clearSelection();
+  attemptSwap(sr,sc,r,c);
+}
+
+async function attemptSwap(r1,c1,r2,c2){
+  busy=true;
+  swap(r1,c1,r2,c2);
+  const matches=findMatches();
+  if(!matches){
+    // invalid — swap back with shake animation, then unlock
+    swap(r1,c1,r2,c2);
+    const a=getCell(r1,c1),b=getCell(r2,c2);
+    if(a) a.classList.add('invalid');
+    if(b) b.classList.add('invalid');
+    playInvalid();
+    await delay(260);
+    if(a) a.classList.remove('invalid');
+    if(b) b.classList.remove('invalid');
+    busy=false;
+    return;
+  }
+  // valid swap — animate cells briefly then resolve
+  animSwapVisual(r1,c1,r2,c2);
+  await delay(140);
+  combo=1;
+  await resolveAll(matches);
+  busy=false;
+  if(!hasMoves()) shuffleBoard();
+}
+
+function swap(r1,c1,r2,c2){const t=grid[r1][c1];grid[r1][c1]=grid[r2][c2];grid[r2][c2]=t;}
+
+function animSwapVisual(r1,c1,r2,c2){
+  const sz=cellSize();
+  const a=getCell(r1,c1),b=getCell(r2,c2);
+  if(!a||!b) return;
+  const dr=(r2-r1)*(sz+3),dc=(c2-c1)*(sz+3);
+  a.style.transition='transform .13s';b.style.transition='transform .13s';
+  a.style.transform=`translate(${dc}px,${dr}px)`;
+  b.style.transform=`translate(${-dc}px,${-dr}px)`;
+  setTimeout(()=>{
+    a.style.transition='';a.style.transform='';
+    b.style.transition='';b.style.transform='';
+    syncCell(r1,c1);syncCell(r2,c2);
+  },135);
+}
+
+async function resolveAll(matches){
+  while(matches){
+    await animateMatches(matches);
+    const cnt=matches.size;
+    const pts=cnt*10*combo;
+    score+=pts;cleared+=cnt;
+    stScore.textContent=score;
+    stCleared.textContent=cleared;
+    playPop(Math.min(combo,8));
+    if(combo>=2){playCombo(combo);showCombo(combo,pts);}
+    stCombo.textContent='×'+combo;
+    combo++;
+    removeMatched(matches);
+    if(FALL) await animateFall();
+    else fillEmpty();
+    syncGrid();
+    matches=findMatches();
+    if(matches) await delay(100);
+  }
+  combo=1;stCombo.textContent='×1';
+}
+
+function findMatches(){
+  const set=new Set();
+  for(let r=0;r<R;r++){
+    let run=1;
+    for(let c=1;c<=C;c++){
+      if(c<C&&grid[r][c]&&grid[r][c]===grid[r][c-1]) run++;
+      else{if(run>=3) for(let k=c-run;k<c;k++) set.add(r*C+k);run=1;}
+    }
+  }
+  for(let c=0;c<C;c++){
+    let run=1;
+    for(let r=1;r<=R;r++){
+      if(r<R&&grid[r][c]&&grid[r][c]===grid[r-1][c]) run++;
+      else{if(run>=3) for(let k=r-run;k<r;k++) set.add(k*C+c);run=1;}
+    }
+  }
+  return set.size?set:null;
+}
+
+async function animateMatches(set){
+  set.forEach(idx=>{
+    const r=Math.floor(idx/C),c=idx%C;
+    const el=getCell(r,c);
+    if(el){el.classList.add('matched');spawnBurst(el);}
+  });
+  await delay(370);
+}
+
+function spawnBurst(el){
+  const wrap=document.getElementById('board-wrap');
+  const wr=wrap.getBoundingClientRect(),er=el.getBoundingClientRect();
+  const x=er.left-wr.left+er.width/2,y=er.top-wr.top+er.height/2;
+  const stars=['✨','⭐','💫','🌟'];
+  for(let i=0;i<6;i++){
+    const p=document.createElement('div');
+    const angle=Math.PI*2/6*i;
+    const dist=22+Math.random()*16;
+    p.style.cssText=`position:absolute;left:${x}px;top:${y}px;font-size:13px;pointer-events:none;z-index:5;transition:transform .35s ease-out,opacity .35s ease-out;font-family:"Apple Color Emoji","Segoe UI Emoji",sans-serif`;
+    p.textContent=stars[Math.floor(Math.random()*4)];
+    wrap.appendChild(p);
+    requestAnimationFrame(()=>{p.style.transform=`translate(${Math.cos(angle)*dist}px,${Math.sin(angle)*dist}px) scale(.25)`;p.style.opacity='0';});
+    setTimeout(()=>p.remove(),390);
+  }
+}
+
+function removeMatched(set){set.forEach(idx=>{const r=Math.floor(idx/C),c=idx%C;grid[r][c]=null;});}
+
+async function animateFall(){
+  for(let c=0;c<C;c++){
+    let empty=R-1;
+    for(let r=R-1;r>=0;r--){
+      if(grid[r][c]){if(r!==empty){grid[empty][c]=grid[r][c];grid[r][c]=null;}empty--;}
+    }
+    for(let r=empty;r>=0;r--) grid[r][c]=randFruit();
+  }
+  syncGrid();
+  board.querySelectorAll('.cell').forEach(el=>el.classList.add('falling'));
+  await delay(240);
+  board.querySelectorAll('.cell').forEach(el=>el.classList.remove('falling'));
+}
+
+function fillEmpty(){
+  for(let r=0;r<R;r++) for(let c=0;c<C;c++) if(!grid[r][c]) grid[r][c]=randFruit();
+  syncGrid();
+  board.querySelectorAll('.cell').forEach(el=>el.classList.add('new-in'));
+  setTimeout(()=>board.querySelectorAll('.cell').forEach(el=>el.classList.remove('new-in')),260);
+}
+
+function syncGrid(){
+  const sz=cellSize();
+  const fs=Math.round(sz*.58)+'px';
+  for(let r=0;r<R;r++) for(let c=0;c<C;c++){
+    const el=getCell(r,c);if(!el) continue;
+    el.textContent=grid[r][c]||'';
+    el.style.fontSize=fs;
+    el.classList.remove('matched','falling','new-in','selected','invalid');
+  }
+}
+
+function syncCell(r,c){const el=getCell(r,c);if(el) el.textContent=grid[r][c]||'';}
+
+function showCombo(c,pts){
+  const msgs=['','','2连击！','3连击！','4连击！','5连击！','超级连击！','太厉害啦！','无敌连击！！'];
+  comboBanner.textContent=(msgs[c]||`${c}连击！`)+` +${pts}`;
+  comboBanner.style.opacity='1';
+  clearTimeout(comboTO);
+  comboTO=setTimeout(()=>comboBanner.style.opacity='0',1100);
+}
+
+function hasMoves(){
+  for(let r=0;r<R;r++) for(let c=0;c<C;c++){
+    if(c+1<C){swap(r,c,r,c+1);const m=findMatches();swap(r,c,r,c+1);if(m) return true;}
+    if(r+1<R){swap(r,c,r+1,c);const m=findMatches();swap(r,c,r+1,c);if(m) return true;}
+  }
+  return false;
+}
+
+function shuffleBoard(){
+  if(busy) return;
+  let tries=0;
+  do{
+    for(let r=0;r<R;r++) for(let c=0;c<C;c++) grid[r][c]=randFruit();
+    tries++;
+  }while((!hasMoves()||findMatches())&&tries<30);
+  syncGrid();
+}
+
+function hintFlash(){
+  if(busy) return;
+  for(let r=0;r<R;r++) for(let c=0;c<C;c++){
+    if(c+1<C){swap(r,c,r,c+1);const m=findMatches();swap(r,c,r,c+1);if(m){flash(r,c,r,c+1);return;}}
+    if(r+1<R){swap(r,c,r+1,c);const m=findMatches();swap(r,c,r+1,c);if(m){flash(r,c,r+1,c);return;}}
+  }
+}
+
+function flash(r1,c1,r2,c2){
+  [[r1,c1],[r2,c2]].forEach(([r,c])=>{
+    const el=getCell(r,c);if(!el) return;
+    el.style.outline='3px solid #e67e22';el.style.transform='scale(1.18)';
+    setTimeout(()=>{el.style.outline='';el.style.transform='';},700);
+  });
+}
+
+function tick(){
+  timeLeft--;
+  stTime.textContent=timeLeft;
+  if(timeLeft<=10) stTime.classList.add('danger');
+  if(timeLeft<=0){
+    clearInterval(timerID);busy=true;
+    document.getElementById('go-score').textContent=`得分：${score}　消除：${cleared}个`;
+    gameoverEl.style.display='flex';
+  }
+}
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+window.newGame=newGame;window.shuffleBoard=shuffleBoard;window.hintFlash=hintFlash;
+newGame();
+</script>
