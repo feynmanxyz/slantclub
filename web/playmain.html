@@ -247,6 +247,13 @@
             animation: float3 3.6s ease-in-out infinite 1s;
         }
 
+        .btn7 {
+            left: 83%;
+            top: 46%;
+            background: linear-gradient(135deg, #2da647 0%, #2c85a5 100%);
+            animation: float1 3.6s ease-in-out infinite 1.2s;
+        }
+
         /* 小按钮容器 */
         .sub-buttons {
             position: absolute;
@@ -300,6 +307,14 @@
             animation-delay: 0.3s;
         }
 
+        .sub-buttons.active .sub-button:nth-child(4) {
+            animation-delay: 0.4s;
+        }
+
+        .sub-buttons.active .sub-button:nth-child(5) {
+            animation-delay: 0.3s;
+        }
+
         @keyframes popIn {
             0% {
                 opacity: 0;
@@ -315,21 +330,13 @@
         }
 
         /* 小按钮位置（三角形分布） */
-        .sub-button:nth-child(1) {
-            left: -70px;
-            top: -30px;
-        }
-
-        .sub-button:nth-child(2) {
-            left: 20px;
-            top: -80px;
-        }
-
-        .sub-button:nth-child(3) {
-            left: 90px;
-            top: -30px;
-        }
-
+ 
+/* 通用子按钮位置控制 (解决5个显示不全的问题) */
+        .sub-button:nth-child(1) { left: -85px; top: -40px; }
+        .sub-button:nth-child(2) { left: -40px; top: -95px; }
+        .sub-button:nth-child(3) { left: 35px; top: -95px; }
+        .sub-button:nth-child(4) { left: 85px; top: -40px; } /* 新增：第四个位置 */
+        .sub-button:nth-child(5) { left: -70px; top: 40px; }   /* 新增：第五个位置（下方中心） */
         /* 提示标签 */
         .tooltip {
             position: absolute;
@@ -423,6 +430,7 @@
         <div class="river-button btn4" data-group="4">4年级</div>
         <div class="river-button btn5" data-group="5">5年级</div>
         <div class="river-button btn6" data-group="6">6年级</div>
+        <div class="river-button btn7" data-group="7">智力游戏</div>
         
         <!-- 按钮1的子按钮 -->
         <div class="sub-buttons" id="sub-group-1">
@@ -461,6 +469,15 @@
         <!-- 按钮6的子按钮 -->
         <div class="sub-buttons" id="sub-group-6">
             <a href="sudoku_game.html" target="_blank" class="sub-button" style="background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%);">数独挑战</a>
+        </div>
+
+        <!-- 按钮6的子按钮 -->
+        <div class="sub-buttons" id="sub-group-7">
+            <a href="fruit_merge_v8_eyecare.html" target="_blank" class="sub-button" style="background: linear-gradient(135deg, #FF5733 0%, #FF8D1A 100%);">水果碰</a>
+            <a href="veggie_merge_v2.html" target="_blank" class="sub-button" style="background: linear-gradient(135deg, #33FF57 0%, #28CC46 100%);">蔬菜碰</a>
+            <a href="animal_merge_game.html" target="_blank" class="sub-button" style="background: linear-gradient(135deg, #3357FF 0%, #2944CC 100%);">动物碰</a>
+            <a href="block_merge_v2.html" target="_blank" class="sub-button" style="background: linear-gradient(135deg, #F333FF 0%, #C128CC 100%);">方块碰</a>
+            <a href="fruit_match3_v2.html" target="_blank" class="sub-button" style="background: linear-gradient(135deg, #FF33A1 0%, #FF1A8D 100%);">水果消</a>
         </div>
         
         <div class="tooltip">
