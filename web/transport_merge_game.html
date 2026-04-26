@@ -1,0 +1,503 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+#root{display:flex;flex-direction:column;align-items:center;padding:14px;gap:12px}
+#game-wrap{display:inline-flex;gap:0;border:1.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)}
+#game-area{width:300px;flex-shrink:0;position:relative;background:#f0f2f8;cursor:crosshair;border-right:1px solid var(--color-border-tertiary)}
+#game-canvas{display:block}
+#fx-canvas{position:absolute;inset:0;pointer-events:none}
+#sidebar{width:140px;flex-shrink:0;display:flex;flex-direction:column;background:var(--color-background-primary)}
+.s-block{padding:9px 12px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.s-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px}
+.score-val{font-size:26px;font-weight:500;color:var(--color-text-primary);line-height:1}
+.next-box{font-size:32px;text-align:center;line-height:1.3;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif}
+.s-block select{width:100%;font-size:12px;padding:3px 5px;border:0.5px solid var(--color-border-secondary);border-radius:6px;background:var(--color-background-primary);color:var(--color-text-primary);margin-top:2px}
+.eye-bar{height:5px;border-radius:3px;background:var(--color-border-tertiary);overflow:hidden;margin-top:5px}
+.eye-fill{height:100%;background:#2255cc;border-radius:3px;transition:width .9s linear}
+.start-btn{margin:8px 12px;padding:8px;background:#2255cc;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer}
+.start-btn:hover{background:#1a44aa}
+#aim-line{position:absolute;top:0;width:1px;background:rgba(80,100,180,.3);pointer-events:none;transform:translateX(-50%);display:none}
+#overlay{position:absolute;inset:0;background:rgba(0,0,0,.62);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:10}
+#overlay h2{font-size:19px;font-weight:500;color:#fff}
+#overlay p{font-size:13px;color:rgba(255,255,255,.85);text-align:center;padding:0 12px;line-height:1.7}
+#overlay button{padding:8px 22px;background:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-weight:500}
+#eye-overlay{position:absolute;inset:0;z-index:20;display:none;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(5,10,30,.93);border-radius:var(--border-radius-lg)}
+#eye-overlay h2{color:#88aaff;font-size:18px;font-weight:500}
+#eye-overlay p{color:rgba(180,200,255,.85);font-size:13px;text-align:center;line-height:1.7;padding:0 16px}
+#eye-cd{font-size:40px;font-weight:500;color:#88aaff}
+#legend-wrap{width:100%;max-width:452px;border:1.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);overflow:hidden;background:var(--color-background-primary)}
+#legend-title{padding:7px 14px;font-size:12px;color:var(--color-text-secondary);border-bottom:0.5px solid var(--color-border-tertiary)}
+#legend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr))}
+.leg-item{display:flex;align-items:center;gap:6px;padding:7px 10px;border-bottom:0.5px solid var(--color-border-tertiary);border-right:0.5px solid var(--color-border-tertiary)}
+.leg-emoji{font-size:20px;font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;line-height:1}
+.leg-info{display:flex;flex-direction:column}
+.leg-name{font-size:11px;color:var(--color-text-primary)}
+.leg-lv{font-size:10px;color:var(--color-text-secondary)}
+</style>
+
+<div id="root">
+  <div style="position:relative">
+    <div id="game-wrap">
+      <div id="game-area">
+        <div id="aim-line"></div>
+        <canvas id="game-canvas"></canvas>
+        <canvas id="fx-canvas"></canvas>
+        <div id="overlay">
+          <h2>🚀 交通合并</h2>
+          <p>从滑板开始，合并升级<br>最终驾驶火箭飞船！</p>
+          <button onclick="startGame()">出发！</button>
+        </div>
+      </div>
+      <div id="sidebar">
+        <div class="s-block"><div class="s-label">得分</div><div class="score-val" id="score">0</div></div>
+        <div class="s-block"><div class="s-label">下一个</div><div class="next-box" id="next-tr">🛹</div></div>
+        <div class="s-block">
+          <div class="s-label">交通种类</div>
+          <select id="tr-count">
+            <option value="5">5种（简单）</option>
+            <option value="7" selected>7种（普通）</option>
+            <option value="9">9种（困难）</option>
+            <option value="11">11种（地狱）</option>
+          </select>
+        </div>
+        <div class="s-block">
+          <div class="s-label">游戏区高度</div>
+          <select id="game-height">
+            <option value="350">矮（难）</option>
+            <option value="450" selected>中</option>
+            <option value="580">高（易）</option>
+          </select>
+        </div>
+        <div class="s-block">
+          <div class="s-label">护眼定时 <span id="eye-lbl" style="float:right;font-weight:500;color:var(--color-text-primary)">05:00</span></div>
+          <select id="eye-setting">
+            <option value="300" selected>5分钟</option>
+            <option value="360">6分钟</option>
+            <option value="420">7分钟</option>
+            <option value="480">8分钟</option>
+            <option value="540">9分钟</option>
+            <option value="600">10分钟</option>
+          </select>
+          <div class="eye-bar"><div class="eye-fill" id="eye-fill" style="width:100%"></div></div>
+        </div>
+        <button class="start-btn" onclick="startGame()">新游戏</button>
+      </div>
+    </div>
+    <div id="eye-overlay">
+      <div style="font-size:44px">👁️</div>
+      <h2>护眼休息时间</h2>
+      <p>请放松眼睛<br>看看远处</p>
+      <div id="eye-cd">60</div>
+      <div style="font-size:11px;color:rgba(140,160,220,.6)">休息后自动恢复</div>
+    </div>
+  </div>
+  <div id="legend-wrap">
+    <div id="legend-title">交通工具图鉴 — 从慢到快，从小到大</div>
+    <div id="legend-grid"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+<script>
+// 11种交通工具，由小/慢到大/快排列
+const ALL_TR = [
+  {emoji:'🛹', r:14, n:'滑板'},
+  {emoji:'🚲', r:19, n:'自行车'},
+  {emoji:'🛵', r:24, n:'摩托车'},
+  {emoji:'🚗', r:30, n:'轿车'},
+  {emoji:'🚕', r:35, n:'出租车'},
+  {emoji:'🚌', r:41, n:'公交车'},
+  {emoji:'🚛', r:47, n:'货车'},
+  {emoji:'🚂', r:53, n:'火车'},
+  {emoji:'✈️', r:60, n:'飞机'},
+  {emoji:'🛸', r:67, n:'飞碟'},
+  {emoji:'🚀', r:74, n:'火箭'},
+];
+
+let engine,runner,world;
+let bodies=[],score=0,trs=[];
+let nextIdx=0,currentIdx=0;
+let gameRunning=false,canDrop=true,dropX=150;
+let gameOver=false,animFrame;
+let mergeQueue=[],scheduledIds=new Set();
+const COOLDOWN_MS=150,PROXIMITY_GAP=3;
+
+// 道路/云彩背景动画
+let bgTick=0;
+let clouds=[];
+function makeClouds(w,h){
+  clouds=[];
+  for(let i=0;i<6;i++) clouds.push({
+    x:Math.random()*w, y:Math.random()*(h*.5),
+    w:40+Math.random()*50, h:18+Math.random()*14,
+    vx:0.12+Math.random()*.18, alpha:.18+Math.random()*.14
+  });
+}
+function drawBackground(w,h){
+  bgTick+=.006;
+  // 天空渐变
+  const sky=ctx.createLinearGradient(0,0,0,h);
+  sky.addColorStop(0,'#c8dff8');sky.addColorStop(.6,'#ddeeff');sky.addColorStop(1,'#e8eef5');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+
+  // 移动云彩
+  clouds.forEach(c=>{
+    c.x+=c.vx;if(c.x>w+60)c.x=-60;
+    ctx.save();ctx.globalAlpha=c.alpha;ctx.fillStyle='#fff';
+    // 云朵形状
+    ctx.beginPath();ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(c.x-c.w*.35,c.y+c.h*.2,c.w*.6,c.h*.75,0,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.ellipse(c.x+c.w*.38,c.y+c.h*.15,c.w*.55,c.h*.7,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  });
+
+  // 道路（底部）
+  const roadH=Math.min(h*.12,52);
+  ctx.fillStyle='#8a9aaa';ctx.fillRect(0,h-roadH,w,roadH);
+  // 道路标线
+  ctx.strokeStyle='#ffe080';ctx.lineWidth=2;ctx.setLineDash([14,10]);
+  ctx.beginPath();ctx.moveTo(0,h-roadH/2);ctx.lineTo(w,h-roadH/2);ctx.stroke();
+  ctx.setLineDash([]);
+  // 路牙
+  ctx.fillStyle='#b0bcc8';ctx.fillRect(0,h-roadH,w,4);
+}
+
+// ── Audio ─────────────────────────────────────────────────────────────────────
+let audioCtx=null;
+function getAC(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();if(audioCtx.state==='suspended')audioCtx.resume();return audioCtx;}
+function playMerge(level){
+  try{
+    const ac=getAC(),now=ac.currentTime;
+    if(level<=2){
+      // 滑板/自行车：轻快滴声
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);o.type='square';
+      o.frequency.setValueAtTime(880+level*110,now);
+      o.frequency.exponentialRampToValueAtTime(440,now+.08);
+      g.gain.setValueAtTime(.1,now);g.gain.exponentialRampToValueAtTime(.001,now+.15);
+      o.start(now);o.stop(now+.15);
+    } else if(level<=5){
+      // 汽车/巴士：喇叭声
+      [1,1.33].forEach((m,i)=>{
+        const o=ac.createOscillator(),g=ac.createGain();
+        o.connect(g);g.connect(ac.destination);o.type='sawtooth';
+        const fl=ac.createBiquadFilter();o.connect(fl);fl.connect(g);fl.type='lowpass';fl.frequency.value=800;
+        const f=(330+level*40)*m,t=now+i*.05;
+        g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.14,t+.03);
+        g.gain.exponentialRampToValueAtTime(.001,t+.28);
+        o.frequency.value=f;o.start(t);o.stop(t+.28);
+      });
+    } else if(level<=8){
+      // 火车/飞机：轰鸣+气笛
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);o.type='sawtooth';
+      o.frequency.setValueAtTime(220+level*18,now);
+      g.gain.setValueAtTime(.18,now);g.gain.exponentialRampToValueAtTime(.001,now+.38);
+      o.start(now);o.stop(now+.38);
+      [1,1.5,2].forEach((m,i)=>{
+        const o2=ac.createOscillator(),g2=ac.createGain();
+        o2.connect(g2);g2.connect(ac.destination);o2.type='triangle';
+        o2.frequency.value=(440+level*30)*m;
+        const t=now+i*.08;
+        g2.gain.setValueAtTime(0,t);g2.gain.linearRampToValueAtTime(.1,t+.02);
+        g2.gain.exponentialRampToValueAtTime(.001,t+.3);
+        o2.start(t);o2.stop(t+.3);
+      });
+    } else {
+      // 火箭：发射轰鸣
+      const o=ac.createOscillator(),g=ac.createGain();
+      o.connect(g);g.connect(ac.destination);o.type='sawtooth';
+      o.frequency.setValueAtTime(80,now);o.frequency.exponentialRampToValueAtTime(40,now+.5);
+      g.gain.setValueAtTime(.4,now);g.gain.exponentialRampToValueAtTime(.001,now+.55);
+      o.start(now);o.stop(now+.55);
+      [1760,2200,880,1320,660].forEach((f,i)=>{
+        const o2=ac.createOscillator(),g2=ac.createGain();
+        o2.connect(g2);g2.connect(ac.destination);o2.type='triangle';o2.frequency.value=f;
+        const t=now+i*.06;
+        g2.gain.setValueAtTime(.13,t);g2.gain.exponentialRampToValueAtTime(.001,t+.35);
+        o2.start(t);o2.stop(t+.35);
+      });
+    }
+  }catch(e){}
+}
+
+// ── Particles ─────────────────────────────────────────────────────────────────
+let particles=[],floatingTexts=[];
+const fxCanvas=document.getElementById('fx-canvas');
+const fxCtx=fxCanvas.getContext('2d');
+
+function getCfg(l){
+  if(l<=2)return{count:8,speed:2.5,size:5,life:32,icons:['💨','✨'],colors:['#aabbcc','#ddeeff','#ffffff']};
+  if(l<=4)return{count:14,speed:3.2,size:7,life:44,icons:['💨','💥','✨'],colors:['#ffdd44','#ff8800','#fff']};
+  if(l<=6)return{count:20,speed:4.2,size:9,life:52,icons:['🎉','💨','💥','✨'],colors:['#ff6600','#ffcc00','#4488ff','#fff']};
+  if(l<=8)return{count:28,speed:5.2,size:11,life:64,icons:['🎊','🎉','💥','💨','✨'],colors:['#ff3300','#ffaa00','#0066ff','#00ccff','#fff']};
+  return{count:42,speed:7,size:14,life:80,icons:['🎆','🎊','🎉','💥','🚀','⭐','✨'],colors:['#ff2200','#ff8800','#00aaff','#ff00cc','#ffcc00','#fff','#88ffff']};
+}
+
+function spawnParticles(x,y,level){
+  const cfg=getCfg(level);
+  for(let i=0;i<cfg.count;i++){
+    const angle=Math.PI*2/cfg.count*i+Math.random()*.45;
+    const speed=cfg.speed*(.55+Math.random()*.9);
+    particles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-(level>5?2.2:1),
+      life:cfg.life+Math.random()*20|0,maxLife:cfg.life+20,
+      size:cfg.size*(.65+Math.random()*.75),
+      icon:cfg.icons[Math.random()*cfg.icons.length|0],
+      color:cfg.colors[Math.random()*cfg.colors.length|0],
+      rot:Math.random()*Math.PI*2,rotV:(Math.random()-.5)*.35,
+      useEmoji:level>=3});
+  }
+  const labels=['','','','好球!','漂亮!','加速!','超速!!','全速!!','音障突破!!!','起飞!!!!','🚀传说!!!!!'];
+  if(level>0) floatingTexts.push({x,y:y-12,vy:-1.8,life:55,maxLife:55,
+    text:labels[Math.min(level,labels.length-1)],
+    size:13+level*2,
+    color:level>=9?'#ff2200':level>=6?'#ff8800':level>=3?'#2255cc':'#4477cc'});
+}
+
+function updateFX(){
+  fxCtx.clearRect(0,0,fxCanvas.width,fxCanvas.height);
+  const alive=[];
+  for(const p of particles){
+    p.x+=p.vx;p.y+=p.vy;p.vy+=.18;p.rot+=p.rotV;p.life--;
+    if(p.life<=0)continue;
+    const alpha=p.life/p.maxLife;
+    fxCtx.save();fxCtx.globalAlpha=alpha;fxCtx.translate(p.x,p.y);fxCtx.rotate(p.rot);
+    if(p.useEmoji){
+      fxCtx.font=`${p.size*2}px "Apple Color Emoji","Segoe UI Emoji",sans-serif`;
+      fxCtx.textAlign='center';fxCtx.textBaseline='middle';fxCtx.fillText(p.icon,0,0);
+    } else {
+      fxCtx.fillStyle=p.color;fxCtx.beginPath();
+      fxCtx.arc(0,0,p.size*alpha*.85+.5,0,Math.PI*2);fxCtx.fill();
+    }
+    fxCtx.restore();alive.push(p);
+  }
+  particles=alive;
+  const aliveT=[];
+  for(const t of floatingTexts){
+    t.y+=t.vy;t.life--;if(t.life<=0)continue;
+    const alpha=Math.min(1,t.life/(t.maxLife*.32));
+    fxCtx.save();fxCtx.globalAlpha=alpha;
+    fxCtx.font=`600 ${Math.round(t.size)}px sans-serif`;
+    fxCtx.textAlign='center';fxCtx.textBaseline='middle';
+    fxCtx.fillStyle=t.color;fxCtx.fillText(t.text,t.x,t.y);
+    fxCtx.restore();aliveT.push(t);
+  }
+  floatingTexts=aliveT;
+}
+
+// ── Game core ─────────────────────────────────────────────────────────────────
+const canvas=document.getElementById('game-canvas');
+const ctx=canvas.getContext('2d');
+const gameArea=document.getElementById('game-area');
+const aimLine=document.getElementById('aim-line');
+const overlay=document.getElementById('overlay');
+
+function getTrs(){return ALL_TR.slice(0,parseInt(document.getElementById('tr-count').value));}
+function getHeight(){return parseInt(document.getElementById('game-height').value);}
+
+function buildLegend(){
+  const ts=getTrs();
+  document.getElementById('legend-grid').innerHTML=ts.map((t,i)=>
+    `<div class="leg-item"><span class="leg-emoji">${t.emoji}</span><div class="leg-info"><span class="leg-name">${t.n}</span><span class="leg-lv">第${i+1}级</span></div></div>`
+  ).join('');
+}
+buildLegend();
+document.getElementById('tr-count').onchange=buildLegend;
+
+function startGame(){
+  if(engine){Matter.Runner.stop(runner);Matter.Engine.clear(engine);}
+  if(animFrame)cancelAnimationFrame(animFrame);
+  score=0;bodies=[];mergeQueue=[];scheduledIds=new Set();
+  particles=[];floatingTexts=[];
+  gameOver=false;canDrop=true;trs=getTrs();
+  document.getElementById('score').textContent='0';
+  overlay.style.display='none';resetEye();
+
+  const h=getHeight(),w=300;
+  canvas.width=w;canvas.height=h;fxCanvas.width=w;fxCanvas.height=h;
+  gameArea.style.height=h+'px';dropX=w/2;
+  makeClouds(w,h);
+
+  engine=Matter.Engine.create({gravity:{y:1.5},positionIterations:10,velocityIterations:8});
+  world=engine.world;runner=Matter.Runner.create({delta:1000/60});
+
+  const wo={isStatic:true,friction:.35,restitution:.12,label:'wall'};
+  Matter.Composite.add(world,[
+    Matter.Bodies.rectangle(w/2,h+25,w+4,50,wo),
+    Matter.Bodies.rectangle(-25,h/2,50,h*2,wo),
+    Matter.Bodies.rectangle(w+25,h/2,50,h*2,wo),
+  ]);
+  Matter.Events.on(engine,'collisionStart',handlePairs);
+  Matter.Events.on(engine,'collisionActive',handlePairs);
+  Matter.Runner.run(runner,engine);
+
+  pickNext();currentIdx=nextIdx;pickNext();
+  document.getElementById('next-tr').textContent=trs[nextIdx].emoji;
+
+  gameArea.addEventListener('mousemove',onMM);
+  gameArea.addEventListener('click',onCK);
+  gameArea.addEventListener('touchmove',onTM,{passive:false});
+  gameArea.addEventListener('touchend',onTE);
+  gameRunning=true;loop();
+}
+
+function pickNext(){
+  const max=Math.min(trs.length-1,Math.floor(trs.length*.45));
+  nextIdx=Math.floor(Math.random()*(max+1));
+}
+
+function spawnBody(idx,x,y){
+  const t=trs[idx];
+  const b=Matter.Bodies.circle(x,y,t.r,{restitution:.15,friction:.45,frictionAir:.01,density:.003,label:'tr',slop:.5});
+  b.trIdx=idx;b.born=Date.now();
+  Matter.Composite.add(world,b);bodies.push(b);return b;
+}
+function safeRemove(b){const i=bodies.indexOf(b);if(i===-1)return false;Matter.Composite.remove(world,b);bodies.splice(i,1);return true;}
+function trySchedule(a,b){
+  if(a.trIdx!==b.trIdx)return;
+  const now=Date.now();
+  if(now-a.born<COOLDOWN_MS||now-b.born<COOLDOWN_MS)return;
+  if(scheduledIds.has(a.id)||scheduledIds.has(b.id))return;
+  scheduledIds.add(a.id);scheduledIds.add(b.id);mergeQueue.push({a,b});
+}
+function handlePairs(e){e.pairs.forEach(({bodyA,bodyB})=>{if(bodyA.label==='tr'&&bodyB.label==='tr')trySchedule(bodyA,bodyB);});}
+function proxScan(){
+  const now=Date.now();
+  for(let i=0;i<bodies.length;i++) for(let j=i+1;j<bodies.length;j++){
+    const a=bodies[i],b=bodies[j];
+    if(a.trIdx!==b.trIdx)continue;
+    if(now-a.born<COOLDOWN_MS||now-b.born<COOLDOWN_MS)continue;
+    if(scheduledIds.has(a.id)||scheduledIds.has(b.id))continue;
+    const dx=a.position.x-b.position.x,dy=a.position.y-b.position.y;
+    if(Math.sqrt(dx*dx+dy*dy)<=trs[a.trIdx].r+trs[b.trIdx].r+PROXIMITY_GAP){
+      scheduledIds.add(a.id);scheduledIds.add(b.id);mergeQueue.push({a,b});
+    }
+  }
+}
+function processMerges(){
+  while(mergeQueue.length){
+    const{a,b}=mergeQueue.shift();scheduledIds.delete(a.id);scheduledIds.delete(b.id);
+    if(!safeRemove(a)||!safeRemove(b))continue;
+    const mx=(a.position.x+b.position.x)/2,my=(a.position.y+b.position.y)/2;
+    const ni=a.trIdx+1;
+    score+=1;document.getElementById('score').textContent=score;
+    spawnParticles(mx,my,Math.min(ni,ALL_TR.length-1));
+    playMerge(Math.min(ni,ALL_TR.length-1));
+    if(ni<trs.length){
+      const tr=trs[ni];
+      spawnBody(ni,Math.max(tr.r+1,Math.min(canvas.width-tr.r-1,mx)),
+                   Math.max(tr.r+1,Math.min(canvas.height-tr.r-1,my)));
+    }
+  }
+}
+
+const DANGER_Y=50;let dangerFrames=0;
+
+function drawTr(b){
+  const t=trs[b.trIdx];if(!t)return;
+  ctx.save();ctx.translate(b.position.x,b.position.y);ctx.rotate(b.angle);
+  // 高级交通工具加尾焰光晕
+  if(b.trIdx>=8){
+    ctx.shadowBlur=t.r*.6;
+    const glows=['#ff8800','#ff4400','#ff0088'];
+    ctx.shadowColor=glows[Math.min(b.trIdx-8,2)];
+  }
+  ctx.font=`${t.r*2}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.globalAlpha=1;
+  ctx.fillText(t.emoji,0,0);ctx.restore();
+}
+
+function loop(){
+  proxScan();processMerges();
+  drawBackground(canvas.width,canvas.height);
+
+  let danger=false;
+  bodies.forEach(b=>{
+    if(!trs[b.trIdx])return;
+    if(b.position.y-trs[b.trIdx].r<DANGER_Y)danger=true;
+    drawTr(b);
+  });
+
+  if(danger){
+    dangerFrames++;
+    ctx.fillStyle=`rgba(220,80,30,${Math.min(.14,dangerFrames*.001)})`;
+    ctx.fillRect(0,0,canvas.width,DANGER_Y);
+    if(dangerFrames>120){endGame();return;}
+  } else dangerFrames=Math.max(0,dangerFrames-2);
+
+  ctx.strokeStyle='rgba(220,100,50,.5)';ctx.setLineDash([5,4]);ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,DANGER_Y);ctx.lineTo(canvas.width,DANGER_Y);ctx.stroke();ctx.setLineDash([]);
+
+  if(canDrop&&gameRunning&&!gameOver){
+    const t=trs[currentIdx];const cx=Math.max(t.r+1,Math.min(canvas.width-t.r-1,dropX));
+    ctx.globalAlpha=.42;ctx.strokeStyle='#8899cc';ctx.setLineDash([4,4]);ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx,canvas.height);ctx.stroke();
+    ctx.setLineDash([]);ctx.globalAlpha=1;
+    ctx.font=`${t.r*2}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.globalAlpha=.52;ctx.fillText(t.emoji,cx,t.r+4);ctx.globalAlpha=1;
+  }
+  updateFX();
+  animFrame=requestAnimationFrame(loop);
+}
+
+function onMM(e){if(!gameRunning||gameOver||eyeLocked)return;const rect=gameArea.getBoundingClientRect();dropX=e.clientX-rect.left;aimLine.style.left=dropX+'px';aimLine.style.height=canvas.height+'px';aimLine.style.display='block';}
+function onCK(e){if(!gameRunning||gameOver||!canDrop||eyeLocked)return;drop(e.clientX-gameArea.getBoundingClientRect().left);}
+function onTM(e){e.preventDefault();if(!gameRunning||gameOver||eyeLocked)return;const rect=gameArea.getBoundingClientRect();dropX=e.touches[0].clientX-rect.left;aimLine.style.left=dropX+'px';aimLine.style.display='block';}
+function onTE(){if(!gameRunning||gameOver||!canDrop||eyeLocked)return;drop(dropX);}
+function drop(x){
+  const t=trs[currentIdx];
+  spawnBody(currentIdx,Math.max(t.r+1,Math.min(canvas.width-t.r-1,x)),t.r+2);
+  canDrop=false;currentIdx=nextIdx;pickNext();
+  document.getElementById('next-tr').textContent=trs[nextIdx].emoji;
+  setTimeout(()=>{if(!gameOver)canDrop=true;},480);
+}
+function endGame(){
+  gameOver=true;gameRunning=false;canDrop=false;
+  Matter.Runner.stop(runner);cancelAnimationFrame(animFrame);aimLine.style.display='none';
+  for(let i=0;i<5;i++)setTimeout(()=>spawnParticles(60+Math.random()*180,80+Math.random()*140,10),i*110);
+  overlay.innerHTML=`<h2>游戏结束 🚀</h2><p>最终得分：${score} 分</p><button onclick="startGame()">再来一局</button>`;
+  overlay.style.display='flex';
+}
+
+// ── Eye care ──────────────────────────────────────────────────────────────────
+let eyeLocked=false,eyeTotal=300,eyeElapsed=0,eyeTickID=null,restLeft=60,restTickID=null;
+const eyeOverlay=document.getElementById('eye-overlay');
+const eyeFill=document.getElementById('eye-fill');
+const eyeLbl=document.getElementById('eye-lbl');
+const eyeCd=document.getElementById('eye-cd');
+function fmt(s){return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');}
+function resetEye(){
+  clearInterval(eyeTickID);clearInterval(restTickID);
+  eyeLocked=false;eyeElapsed=0;
+  eyeTotal=parseInt(document.getElementById('eye-setting').value);
+  eyeFill.style.width='100%';eyeLbl.textContent=fmt(eyeTotal);
+  eyeOverlay.style.display='none';
+  eyeTickID=setInterval(()=>{
+    if(eyeLocked)return;eyeElapsed++;
+    const rem=eyeTotal-eyeElapsed;
+    eyeLbl.textContent=fmt(Math.max(0,rem));
+    eyeFill.style.width=(rem/eyeTotal*100)+'%';
+    if(rem<=0)lockEye();
+  },1000);
+}
+function lockEye(){
+  clearInterval(eyeTickID);eyeLocked=true;
+  if(gameRunning&&!gameOver){Matter.Runner.stop(runner);cancelAnimationFrame(animFrame);}
+  aimLine.style.display='none';restLeft=60;eyeCd.textContent=restLeft;eyeOverlay.style.display='flex';
+  restTickID=setInterval(()=>{
+    restLeft--;eyeCd.textContent=restLeft;
+    if(restLeft<=0){
+      clearInterval(restTickID);eyeOverlay.style.display='none';
+      eyeLocked=false;eyeElapsed=0;
+      eyeTotal=parseInt(document.getElementById('eye-setting').value);
+      eyeFill.style.width='100%';eyeLbl.textContent=fmt(eyeTotal);
+      resetEye();
+      if(gameRunning&&!gameOver){Matter.Runner.run(runner,engine);loop();}
+    }
+  },1000);
+}
+document.getElementById('eye-setting').onchange=()=>{if(!eyeLocked)resetEye();};
+window.startGame=startGame;
+startGame();
+</script>
